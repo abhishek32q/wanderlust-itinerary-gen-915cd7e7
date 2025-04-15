@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { format } from 'date-fns';
@@ -29,7 +28,6 @@ export const TripPlanningProvider: React.FC<{ children: React.ReactNode }> = ({ 
   const { saveTripPlan: saveBookingTripPlan } = useBookings();
   const { destinations } = useDestinations();
 
-  // Initialize trip plans from localStorage
   useEffect(() => {
     try {
       const storedTripPlans = localStorage.getItem('tripPlans');
@@ -50,7 +48,6 @@ export const TripPlanningProvider: React.FC<{ children: React.ReactNode }> = ({ 
     }
   }, []);
 
-  // Persist trip plans to localStorage
   useEffect(() => {
     if (tripPlans.length > 0 || !loading) {
       try {
@@ -61,7 +58,6 @@ export const TripPlanningProvider: React.FC<{ children: React.ReactNode }> = ({ 
     }
   }, [tripPlans, loading]);
 
-  // Memoized distance calculation using Haversine formula
   const calculateDistance = useCallback((lat1: number, lon1: number, lat2: number, lon2: number) => {
     const R = 6371; // Earth's radius in km
     const dLat = (lat2 - lat1) * Math.PI / 180;
@@ -74,7 +70,6 @@ export const TripPlanningProvider: React.FC<{ children: React.ReactNode }> = ({ 
     return R * c;
   }, []);
 
-  // Calculate distance between destinations
   const calculateDistanceBetweenDestinations = useCallback((from: Destination, to: Destination): number => {
     if (!from.coordinates || !to.coordinates) return 0;
     return calculateDistance(
@@ -85,7 +80,6 @@ export const TripPlanningProvider: React.FC<{ children: React.ReactNode }> = ({ 
     );
   }, [calculateDistance]);
 
-  // Calculate hotel proximity with caching
   const calculateHotelProximity = useCallback((hotel: HotelType, destination: Destination): HotelType => {
     if (!destination.coordinates) return hotel;
     
@@ -108,7 +102,6 @@ export const TripPlanningProvider: React.FC<{ children: React.ReactNode }> = ({ 
     };
   }, [calculateDistance]);
 
-  // Get hotels by destination with proximity data
   const getHotelsByDestination = useCallback((destinationId: string): HotelType[] => {
     const destination = destinations.find(d => d.id === destinationId);
     return hotels
@@ -116,14 +109,12 @@ export const TripPlanningProvider: React.FC<{ children: React.ReactNode }> = ({ 
       .map(hotel => destination ? calculateHotelProximity(hotel, destination) : hotel);
   }, [destinations, calculateHotelProximity]);
 
-  // Get nearby hotels sorted by distance
   const getNearbyHotels = useCallback((destinationId: string, limit = 3) => {
     return getHotelsByDestination(destinationId)
       .sort((a, b) => a.location.distanceFromCenter - b.location.distanceFromCenter)
       .slice(0, limit);
   }, [getHotelsByDestination]);
 
-  // Get optimal hotels that balance proximity across destinations
   const getOptimalHotels = useCallback((destinationIds: string[]): HotelType[] => {
     const destinationHotels = destinationIds.map(destId => {
       const destination = destinations.find(d => d.id === destId);
@@ -145,7 +136,6 @@ export const TripPlanningProvider: React.FC<{ children: React.ReactNode }> = ({ 
     );
   }, [destinations, calculateHotelProximity]);
 
-  // Get distance matrix between destinations
   const getDistanceMatrix = useCallback((destinationIds: string[]) => {
     const selectedDestinations = destinationIds
       .map(id => destinations.find(d => d.id === id))
@@ -176,7 +166,6 @@ export const TripPlanningProvider: React.FC<{ children: React.ReactNode }> = ({ 
     return matrix;
   }, [destinations, calculateDistanceBetweenDestinations]);
 
-  // Generate optimal itinerary with premium features
   const generateOptimalItinerary = useCallback((options: {
     destinationIds: string[];
     transportType: 'bus' | 'train' | 'flight' | 'car';
@@ -185,7 +174,6 @@ export const TripPlanningProvider: React.FC<{ children: React.ReactNode }> = ({ 
     travelStyle?: 'base-hotel' | 'mobile';
     isPremium?: boolean;
   }): TripItineraryDay[] => {
-    // Use the improved function from travelCalculator.ts
     return generateItinerary(
       options,
       destinations,
@@ -193,7 +181,6 @@ export const TripPlanningProvider: React.FC<{ children: React.ReactNode }> = ({ 
     );
   }, [destinations, calculateDistanceBetweenDestinations]);
 
-  // Save trip plan with validation
   const saveTripPlan = useCallback(async (tripPlanData: Omit<TripPlan, 'id' | 'createdAt'>): Promise<string> => {
     setError(null);
     setLoading(true);
@@ -253,17 +240,14 @@ export const TripPlanningProvider: React.FC<{ children: React.ReactNode }> = ({ 
     }
   }, [getOptimalHotels, generateOptimalItinerary, saveBookingTripPlan, toast]);
 
-  // Get user trip plans
   const getUserTripPlans = useCallback((userId: string) => {
     return tripPlans.filter(plan => plan.userId === userId);
   }, [tripPlans]);
 
-  // Get trip plan by ID
   const getTripPlanById = useCallback((id: string) => {
     return tripPlans.find(plan => plan.id === id);
   }, [tripPlans]);
 
-  // Cancel trip plan
   const cancelTripPlan = useCallback(async (tripPlanId: string) => {
     setLoading(true);
     try {
@@ -284,7 +268,6 @@ export const TripPlanningProvider: React.FC<{ children: React.ReactNode }> = ({ 
     }
   }, [toast]);
 
-  // Get transport amenities
   const getTransportAmenities = useCallback((type: string, isOvernight: boolean) => {
     const base = {
       'bus': ['AC', 'Seats'],
@@ -295,7 +278,6 @@ export const TripPlanningProvider: React.FC<{ children: React.ReactNode }> = ({ 
     return isOvernight ? [...base, 'Overnight option'] : base;
   }, []);
 
-  // Calculate trip costs
   const calculateTripCost = useCallback((options: {
     destinationIds: string[];
     guideIds: string[];
@@ -307,7 +289,11 @@ export const TripPlanningProvider: React.FC<{ children: React.ReactNode }> = ({ 
     const selectedDestinations = options.destinationIds
       .map(id => destinations.find(d => d.id === id))
       .filter(Boolean) as Destination[];
-    const destinationsCost = selectedDestinations.reduce((sum, dest) => sum + (dest.price || 0), 0) * options.numberOfPeople;
+    
+    const destinationsCost = selectedDestinations.reduce((sum, dest) => {
+      const adultPrice = typeof dest.price === 'object' ? dest.price.adult : 0;
+      return sum + adultPrice;
+    }, 0) * options.numberOfPeople;
     
     const hotelCostPerDay = hotels
       .filter(h => options.destinationIds.includes(h.destinationId) && h.type === options.hotelType)
@@ -331,7 +317,6 @@ export const TripPlanningProvider: React.FC<{ children: React.ReactNode }> = ({ 
     };
   }, [destinations]);
 
-  // Check trip feasibility
   const checkTripFeasibility = useCallback((options: {
     destinationIds: string[];
     transportType: 'bus' | 'train' | 'flight' | 'car';
@@ -361,7 +346,6 @@ export const TripPlanningProvider: React.FC<{ children: React.ReactNode }> = ({ 
     };
   }, [getDistanceMatrix]);
 
-  // Get suggested transport
   const getSuggestedTransport = useCallback((
     destinationIds: string[], 
     numberOfDays: number,
@@ -377,19 +361,24 @@ export const TripPlanningProvider: React.FC<{ children: React.ReactNode }> = ({ 
     };
     
     let recommendedType: 'bus' | 'train' | 'flight' | 'car' = 'car';
+    let alternativeType: 'bus' | 'train' | 'flight' | 'car' = 'train';
     let reasoning = '';
     
     if (totalDistance > 1000) {
       recommendedType = 'flight';
+      alternativeType = 'train';
       reasoning = 'Best for long distances over 1000km';
     } else if (totalDistance > 300) {
       recommendedType = 'train';
+      alternativeType = 'car';
       reasoning = 'Comfortable for medium distances';
     } else if (numberOfDays > 7) {
       recommendedType = 'car';
+      alternativeType = 'bus';
       reasoning = 'Flexibility for longer trips';
     } else {
       recommendedType = 'bus';
+      alternativeType = 'car';
       reasoning = 'Economical for short trips';
     }
     
@@ -397,7 +386,7 @@ export const TripPlanningProvider: React.FC<{ children: React.ReactNode }> = ({ 
     
     return {
       recommendedType,
-      alternativeType: recommendedType === 'flight' ? 'train' : 'car',
+      alternativeType,
       reasoning,
       totalDistanceKm: totalDistance,
       totalTravelTimeHours: totalTravelHours[recommendedType],

@@ -53,7 +53,13 @@ export const DestinationProvider: React.FC<{ children: React.ReactNode }> = ({ c
   const [destinations, setDestinations] = useState<Destination[]>([]);
   const [filteredDestinations, setFilteredDestinations] = useState<Destination[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
-  const [filters, setFilters] = useState({
+  const [filters, setFilters] = useState<{
+    search: string;
+    state: string;
+    minPrice: number;
+    maxPrice: number;
+    crowdLevel: 'low' | 'medium' | 'high' | '';
+  }>({
     search: '',
     state: '',
     minPrice: 0,
@@ -106,7 +112,15 @@ export const DestinationProvider: React.FC<{ children: React.ReactNode }> = ({ c
   }, []);
 
   const updateFilter = useCallback((key: string, value: any) => {
-    setFilters(prev => ({ ...prev, [key]: value }));
+    setFilters(prev => {
+      // Cast value to the correct type if it's the crowdLevel field
+      if (key === 'crowdLevel') {
+        // Ensure value is one of the acceptable values
+        const validValue = value === 'low' || value === 'medium' || value === 'high' ? value : '';
+        return { ...prev, [key]: validValue };
+      }
+      return { ...prev, [key]: value };
+    });
   }, []);
 
   useEffect(() => {
