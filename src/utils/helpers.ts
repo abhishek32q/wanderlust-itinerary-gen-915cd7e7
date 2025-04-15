@@ -103,3 +103,19 @@ const isValidUrl = (string: string): boolean => {
     return false;
   }
 };
+
+/**
+ * Format time from 24-hour format to 12-hour format
+ * @param time Time string in format HH:MM
+ * @returns Formatted time string
+ */
+export const formatTime = (time: string): string => {
+  const [hours, minutes] = time.split(':').map(Number);
+  
+  if (isNaN(hours)) return time; // Return original if parsing fails
+  
+  if (hours === 0) return '12 AM';
+  if (hours === 12) return '12 PM';
+  
+  return hours > 12 ? `${hours - 12} PM` : `${hours} AM`;
+};
