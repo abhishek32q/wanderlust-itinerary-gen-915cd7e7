@@ -57,6 +57,7 @@ const CrowdChart: React.FC<CrowdChartProps> = ({ crowdData }) => {
             name="Crowd Level" 
             radius={[4, 4, 0, 0]}
             fill={(entry) => getCrowdLevelColor(entry.level)}
+            stroke=""
           />
         </BarChart>
       </ResponsiveContainer>

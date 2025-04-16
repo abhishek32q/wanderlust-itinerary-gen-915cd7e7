@@ -307,7 +307,18 @@ export const TripPlanningProvider: React.FC<{ children: React.ReactNode }> = ({ 
     const selectedDestinations = options.destinationIds
       .map(id => destinations.find(d => d.id === id))
       .filter(Boolean) as Destination[];
-    const destinationsCost = selectedDestinations.reduce((sum, dest) => sum + (dest.price || 0), 0) * options.numberOfPeople;
+      
+    let destinationsCost = 0;
+    
+    for (const dest of selectedDestinations) {
+      if (typeof dest.price === 'number') {
+        destinationsCost += dest.price;
+      } else if (dest.price && typeof dest.price.adult === 'number') {
+        destinationsCost += dest.price.adult;
+      }
+    }
+    
+    destinationsCost *= options.numberOfPeople;
     
     const hotelCostPerDay = hotels
       .filter(h => options.destinationIds.includes(h.destinationId) && h.type === options.hotelType)
@@ -377,19 +388,24 @@ export const TripPlanningProvider: React.FC<{ children: React.ReactNode }> = ({ 
     };
     
     let recommendedType: 'bus' | 'train' | 'flight' | 'car' = 'car';
+    let alternativeType: 'bus' | 'train' | 'flight' | 'car' = 'train';
     let reasoning = '';
     
     if (totalDistance > 1000) {
       recommendedType = 'flight';
+      alternativeType = 'train';
       reasoning = 'Best for long distances over 1000km';
     } else if (totalDistance > 300) {
       recommendedType = 'train';
+      alternativeType = 'car';
       reasoning = 'Comfortable for medium distances';
     } else if (numberOfDays > 7) {
       recommendedType = 'car';
+      alternativeType = 'bus';
       reasoning = 'Flexibility for longer trips';
     } else {
       recommendedType = 'bus';
+      alternativeType = 'car';
       reasoning = 'Economical for short trips';
     }
     
@@ -397,7 +413,7 @@ export const TripPlanningProvider: React.FC<{ children: React.ReactNode }> = ({ 
     
     return {
       recommendedType,
-      alternativeType: recommendedType === 'flight' ? 'train' : 'car',
+      alternativeType,
       reasoning,
       totalDistanceKm: totalDistance,
       totalTravelTimeHours: totalTravelHours[recommendedType],
@@ -443,6 +459,7 @@ export const TripPlanningProvider: React.FC<{ children: React.ReactNode }> = ({ 
   );
 };
 
+// Hook for using trip planning context
 export const useTripPlanning = () => {
   const context = useContext(TripPlanningContext);
   if (context === undefined) {

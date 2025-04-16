@@ -17,6 +17,7 @@ export interface Destination {
     lng: number;
   };
   crowdData: Record<string, number>;
+  attractions?: string[]; // Added attractions property
 }
 
 export interface PriceType {

@@ -86,7 +86,7 @@ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ child
         const updatedBookings = [...bookings];
         updatedBookings[bookingIndex] = {
           ...booking,
-          status: 'cancelled'
+          status: 'cancelled' as const // Fixed typing issue here
         };
         
         setBookings(updatedBookings);
@@ -114,7 +114,7 @@ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ child
         const updatedBookings = [...bookings, {
           ...tripPlan,
           userId: currentUser.id,
-          status: 'confirmed'
+          status: 'confirmed' as const // Fixed typing issue here
         }];
         
         setBookings(updatedBookings);

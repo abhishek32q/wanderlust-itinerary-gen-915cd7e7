@@ -139,7 +139,7 @@ export const generateOptimalItinerary = (
     // Add regular exploration days
     itinerary.push({
       day,
-      date: new Date(currentDate),
+      date: new Date(currentDate).toISOString(),
       destinationId: destination.id,
       destinationName: destination.name,
       activities: [`Explore ${destination.name}`],
@@ -148,7 +148,7 @@ export const generateOptimalItinerary = (
         { time: '08:00', activity: 'Breakfast', location: `Hotel in ${destination.name}` },
         { time: '09:30', activity: `Explore ${destination.name}`, location: destination.name },
         { time: '12:30', activity: 'Lunch', location: `Restaurant in ${destination.name}` },
-        { time: '14:00', activity: `Visit ${destination.attractions?.[0] || 'local attractions'}`, location: destination.name },
+        { time: '14:00', activity: `Visit ${(destination.attractions && destination.attractions[0]) || 'local attractions'}`, location: destination.name },
         { time: '18:00', activity: 'Dinner', location: `Restaurant in ${destination.name}` }
       ]
     });
@@ -164,7 +164,7 @@ export const generateOptimalItinerary = (
       
       itinerary.push({
         day,
-        date: new Date(currentDate),
+        date: new Date(currentDate).toISOString(),
         destinationId: nextDest.id,
         destinationName: nextDest.name,
         activities: [`Travel from ${destination.name} to ${nextDest.name} (${Math.round(distanceKm)} km, ~${Math.round(travelHours)} hours)`],
@@ -192,7 +192,7 @@ export const generateOptimalItinerary = (
   while (day <= options.numberOfDays && lastDestination) {
     itinerary.push({
       day,
-      date: new Date(currentDate),
+      date: new Date(currentDate).toISOString(),
       destinationId: lastDestination.id,
       destinationName: lastDestination.name,
       activities: [`Additional day exploring ${lastDestination.name}`],
