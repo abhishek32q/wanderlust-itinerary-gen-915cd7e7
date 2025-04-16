@@ -55,10 +55,8 @@ const CrowdChart: React.FC<CrowdChartProps> = ({ crowdData }) => {
           <Bar 
             dataKey="level" 
             name="Crowd Level" 
-            fill="#8884d8"
             radius={[4, 4, 0, 0]}
-            // Use a proper type cast to string for the fill attribute
-            fill={(entry) => getCrowdLevelColor(entry.level) as string}
+            fill={(entry) => getCrowdLevelColor(entry.level)}
           />
         </BarChart>
       </ResponsiveContainer>
