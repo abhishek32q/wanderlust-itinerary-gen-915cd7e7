@@ -18,7 +18,6 @@ import { useAuth } from '../context/AuthContext';
 import { useTripPlanning } from '../context/TripPlanningContext';
 import { useDestinations } from '../context/DestinationContext';
 import { TransportType, HotelType, Destination } from '../types';
-import { v4 as uuidv4 } from 'uuid';
 
 interface TripPlanningFormProps {
   selectedDestinations: Destination[];
@@ -27,8 +26,15 @@ interface TripPlanningFormProps {
 const TripPlanningForm: React.FC<TripPlanningFormProps> = ({ selectedDestinations }) => {
   const navigate = useNavigate();
   const { currentUser } = useAuth();
-  const { checkTripFeasibility, getSuggestedTransport, getOptimalHotels, saveTripPlan } = useTripPlanning();
-  const { getCurrentCrowdLevel } = useDestinations();
+  const { 
+    checkTripFeasibility, 
+    getSuggestedTransport, 
+    getOptimalHotels, 
+    saveTripPlan,
+    getGuidesByDestination,
+    calculateTripCost
+  } = useTripPlanning();
+  const { getCurrentCrowdLevel, destinations } = useDestinations();
 
   // Form state
   const [startDate, setStartDate] = useState<Date | undefined>(new Date());
@@ -37,16 +43,29 @@ const TripPlanningForm: React.FC<TripPlanningFormProps> = ({ selectedDestination
   const [transportType, setTransportType] = useState<'bus' | 'train' | 'flight' | 'car'>('car');
   const [hotelType, setHotelType] = useState<'budget' | 'standard' | 'luxury'>('standard');
   const [travelStyle, setTravelStyle] = useState<'base-hotel' | 'mobile'>('mobile');
+  const [selectedGuideIds, setSelectedGuideIds] = useState<string[]>([]);
   
   // Derived data
   const [suggestedTransport, setSuggestedTransport] = useState<any>(null);
   const [feasibilityCheck, setFeasibilityCheck] = useState<any>(null);
   const [optimalHotels, setOptimalHotels] = useState<HotelType[]>([]);
+  const [tripCost, setTripCost] = useState<any>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [availableGuides, setAvailableGuides] = useState<any[]>([]);
 
   const destinationIds = selectedDestinations.map(destination => destination.id);
 
-  // Check trip feasibility when parameters change
+  // Get available guides for selected destinations
+  useEffect(() => {
+    if (selectedDestinations.length > 0) {
+      const guides = selectedDestinations.flatMap(dest => 
+        getGuidesByDestination(dest.id)
+      );
+      setAvailableGuides(guides);
+    }
+  }, [selectedDestinations, getGuidesByDestination]);
+
+  // Check trip feasibility and calculate costs when parameters change
   useEffect(() => {
     if (selectedDestinations.length > 0 && transportType) {
       const feasibility = checkTripFeasibility({
@@ -63,10 +82,41 @@ const TripPlanningForm: React.FC<TripPlanningFormProps> = ({ selectedDestination
       );
       setSuggestedTransport(suggested);
       
-      const hotels = getOptimalHotels(destinationIds);
+      // Only get optimal hotels for multiple destinations or mobile travel style
+      const hotels = (selectedDestinations.length > 1 || travelStyle === 'mobile') 
+        ? getOptimalHotels(destinationIds)
+        : []; // For single destination with base-hotel, we'll calculate differently
+      
       setOptimalHotels(hotels);
+      
+      // Calculate trip cost
+      if (destinationIds.length > 0) {
+        const cost = calculateTripCost({
+          destinationIds,
+          guideIds: selectedGuideIds,
+          hotelType,
+          transportType,
+          numberOfDays,
+          numberOfPeople
+        });
+        setTripCost(cost);
+      }
     }
-  }, [selectedDestinations, transportType, numberOfDays, currentUser?.isPremium]);
+  }, [
+    selectedDestinations, 
+    transportType, 
+    numberOfDays, 
+    hotelType,
+    travelStyle,
+    selectedGuideIds,
+    numberOfPeople,
+    currentUser?.isPremium,
+    checkTripFeasibility,
+    getSuggestedTransport,
+    getOptimalHotels,
+    calculateTripCost,
+    destinationIds
+  ]);
 
   // Handle form submission
   const handleSubmitPlan = async () => {
@@ -84,6 +134,15 @@ const TripPlanningForm: React.FC<TripPlanningFormProps> = ({ selectedDestination
       toast({
         title: "Missing Start Date",
         description: "Please select a start date for your trip",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (selectedDestinations.length === 0) {
+      toast({
+        title: "No Destinations Selected",
+        description: "Please select at least one destination for your trip",
         variant: "destructive"
       });
       return;
@@ -124,42 +183,6 @@ const TripPlanningForm: React.FC<TripPlanningFormProps> = ({ selectedDestination
     }
   };
 
-  // Calculate estimated cost (simplified)
-  const calculateEstimatedCost = () => {
-    let baseCost = 0;
-    
-    // Transport cost based on distance
-    const distance = feasibilityCheck?.totalDistance || 0;
-    const transportRates = { bus: 2, train: 3, flight: 6, car: 4 };
-    const transportCost = transportType === 'flight' 
-      ? 2000 + (distance * transportRates[transportType])
-      : distance * transportRates[transportType];
-    
-    // Hotel cost based on type
-    const hotelRates = { budget: 1500, standard: 3000, luxury: 6000 };
-    const hotelCost = hotelRates[hotelType] * numberOfDays;
-    
-    // Destination entry costs (estimated)
-    const entryCost = selectedDestinations.reduce((total, dest) => {
-      const price = typeof dest.price === 'number' 
-        ? dest.price 
-        : (dest.price?.adult || 100);
-      return total + price;
-    }, 0);
-    
-    baseCost = transportCost + hotelCost + entryCost;
-    
-    // Multiply by number of people
-    baseCost *= numberOfPeople;
-    
-    // Premium discount
-    if (currentUser?.isPremium) {
-      baseCost *= 0.9; // 10% discount
-    }
-    
-    return Math.round(baseCost);
-  };
-
   const getTransportIcon = (type: string) => {
     switch (type) {
       case 'bus': return <Bus className="h-5 w-5" />;
@@ -173,8 +196,12 @@ const TripPlanningForm: React.FC<TripPlanningFormProps> = ({ selectedDestination
   if (selectedDestinations.length === 0) {
     return (
       <Card>
-        <CardContent className="p-6 text-center">
-          <p className="text-gray-500">Please select at least one destination to start planning your trip.</p>
+        <CardContent className="p-6">
+          <div className="text-center py-8">
+            <h3 className="text-xl font-semibold mb-4">Select Destinations for Your Trip</h3>
+            <p className="text-gray-500 mb-6">Please select at least one destination to start planning your trip.</p>
+            <Button onClick={() => navigate('/destinations')}>Browse Destinations</Button>
+          </div>
         </CardContent>
       </Card>
     );
@@ -322,6 +349,49 @@ const TripPlanningForm: React.FC<TripPlanningFormProps> = ({ selectedDestination
                 </Button>
               </div>
             </div>
+
+            {/* Available Guides */}
+            {availableGuides.length > 0 && (
+              <div>
+                <Label className="mb-2 block">Tour Guides</Label>
+                <div className="bg-gray-50 p-4 rounded-lg space-y-3 max-h-48 overflow-y-auto">
+                  {availableGuides.map(guide => (
+                    <div 
+                      key={guide.id} 
+                      className={`flex items-center justify-between p-2 rounded cursor-pointer ${
+                        selectedGuideIds.includes(guide.id) ? "bg-primary/10 border border-primary/30" : "bg-white border"
+                      }`}
+                      onClick={() => {
+                        if (selectedGuideIds.includes(guide.id)) {
+                          setSelectedGuideIds(selectedGuideIds.filter(id => id !== guide.id));
+                        } else {
+                          setSelectedGuideIds([...selectedGuideIds, guide.id]);
+                        }
+                      }}
+                    >
+                      <div>
+                        <p className="font-medium">{guide.name}</p>
+                        <p className="text-sm text-gray-500">
+                          {guide.languages.join(', ')} • ₹{guide.pricePerDay}/day
+                        </p>
+                      </div>
+                      <div className="flex items-center">
+                        <span className="text-amber-500 mr-1">★</span> 
+                        <span>{guide.rating}</span>
+                        <div className={`ml-3 w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                          selectedGuideIds.includes(guide.id) ? "border-primary bg-primary text-white" : "border-gray-300"
+                        }`}>
+                          {selectedGuideIds.includes(guide.id) && "✓"}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  {availableGuides.length === 0 && (
+                    <p className="text-gray-500 text-sm">No guides available for selected destinations.</p>
+                  )}
+                </div>
+              </div>
+            )}
             
             <Separator />
             
@@ -443,37 +513,47 @@ const TripPlanningForm: React.FC<TripPlanningFormProps> = ({ selectedDestination
               <h3 className="font-semibold mb-3">Cost Estimate</h3>
               
               <div className="bg-white border rounded-lg p-4 space-y-3">
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-600">Transport:</span>
-                  <span className="font-medium">₹{Math.round((feasibilityCheck?.totalDistance || 0) * (transportType === 'flight' ? 6 : transportType === 'car' ? 4 : transportType === 'train' ? 3 : 2) * numberOfPeople).toLocaleString()}</span>
-                </div>
-                
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-600">Hotel ({numberOfDays} nights):</span>
-                  <span className="font-medium">₹{(numberOfDays * (hotelType === 'luxury' ? 6000 : hotelType === 'standard' ? 3000 : 1500) * numberOfPeople).toLocaleString()}</span>
-                </div>
-                
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-600">Entry Tickets:</span>
-                  <span className="font-medium">₹{Math.round(selectedDestinations.reduce((total, dest) => {
-                    const price = typeof dest.price === 'number' 
-                      ? dest.price 
-                      : (dest.price?.adult || 100);
-                    return total + price;
-                  }, 0) * numberOfPeople).toLocaleString()}</span>
-                </div>
-                
-                <Separator />
-                
-                <div className="flex justify-between items-center font-semibold">
-                  <span>Total (for {numberOfPeople} people):</span>
-                  <span className="text-lg">₹{calculateEstimatedCost().toLocaleString()}</span>
-                </div>
-                
-                {currentUser?.isPremium && (
-                  <div className="bg-amber-50 border border-amber-200 text-amber-700 p-2 rounded text-sm mt-2 flex gap-2 items-center">
-                    <span className="text-amber-500 font-bold">✦</span>
-                    <p>Premium discount applied (10%)</p>
+                {tripCost ? (
+                  <>
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-600">Transport:</span>
+                      <span className="font-medium">₹{tripCost.transportCost.toLocaleString()}</span>
+                    </div>
+                    
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-600">Hotel ({numberOfDays} nights):</span>
+                      <span className="font-medium">₹{tripCost.hotelsCost.toLocaleString()}</span>
+                    </div>
+                    
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-600">Entry Tickets:</span>
+                      <span className="font-medium">₹{tripCost.destinationsCost.toLocaleString()}</span>
+                    </div>
+
+                    {selectedGuideIds.length > 0 && (
+                      <div className="flex justify-between items-center">
+                        <span className="text-gray-600">Guide Services:</span>
+                        <span className="font-medium">₹{tripCost.guidesCost.toLocaleString()}</span>
+                      </div>
+                    )}
+                    
+                    <Separator />
+                    
+                    <div className="flex justify-between items-center font-semibold">
+                      <span>Total (for {numberOfPeople} people):</span>
+                      <span className="text-lg">₹{tripCost.totalCost.toLocaleString()}</span>
+                    </div>
+                    
+                    {currentUser?.isPremium && (
+                      <div className="bg-amber-50 border border-amber-200 text-amber-700 p-2 rounded text-sm mt-2 flex gap-2 items-center">
+                        <span className="text-amber-500 font-bold">✦</span>
+                        <p>Premium discount applied (10%)</p>
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <div className="py-4 text-center text-gray-500">
+                    <p>Select destinations and options to see cost estimate</p>
                   </div>
                 )}
               </div>
@@ -483,7 +563,7 @@ const TripPlanningForm: React.FC<TripPlanningFormProps> = ({ selectedDestination
               <Button 
                 onClick={handleSubmitPlan} 
                 className="w-full"
-                disabled={submitting || !startDate || !feasibilityCheck?.feasible}
+                disabled={submitting || !startDate || (feasibilityCheck && !feasibilityCheck.feasible)}
               >
                 {submitting ? 'Creating Plan...' : 'Create Trip Plan'}
               </Button>
