@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { formatTime } from '../utils/helpers';
 
 interface CrowdChartProps {
@@ -56,9 +56,12 @@ const CrowdChart: React.FC<CrowdChartProps> = ({ crowdData }) => {
             dataKey="level" 
             name="Crowd Level" 
             radius={[4, 4, 0, 0]}
-            fill={(entry) => getCrowdLevelColor(entry.level)}
-            stroke=""
-          />
+            fill="#8884d8" // Set a default fill color
+          >
+            {chartData.map((entry, index) => (
+              <Cell key={`cell-${index}`} fill={getCrowdLevelColor(entry.level)} />
+            ))}
+          </Bar>
         </BarChart>
       </ResponsiveContainer>
     </div>
