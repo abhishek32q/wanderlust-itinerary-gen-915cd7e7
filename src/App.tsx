@@ -15,6 +15,7 @@ import HomePage from './pages/HomePage';
 import Index from './pages/Index';
 import NotFound from './pages/NotFound';
 import BookingDetails from './pages/BookingDetails';
+import DestinationDetail from './components/DestinationDetail';
 
 // Initialize QueryClient
 const queryClient = new QueryClient({
@@ -38,6 +39,7 @@ function App() {
                   <Routes>
                     <Route path="/" element={<HomePage />} />
                     <Route path="/destinations" element={<Index />} />
+                    <Route path="/destinations/:id" element={<DestinationDetail />} />
                     <Route path="/bookings/:id" element={<BookingDetails />} />
                     <Route path="*" element={<NotFound />} />
                   </Routes>

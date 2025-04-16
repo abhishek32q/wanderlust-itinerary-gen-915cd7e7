@@ -9,7 +9,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import CrowdChart from '../components/CrowdChart';
-import { Camera, MapPin, Calendar, Clock, Star, IndianRupee } from 'lucide-react';
+import { Camera, MapPin, Calendar, Clock, Star, IndianRupee, AlertCircle, Lock } from 'lucide-react';
 import { ensureValidImageUrl, formatPrice } from '../utils/helpers';
 
 const DestinationDetail: React.FC = () => {
@@ -57,7 +57,10 @@ const DestinationDetail: React.FC = () => {
     return (
       <Layout>
         <div className="container mx-auto px-4 py-8 text-center">
-          <p>Loading destination...</p>
+          <p>Destination not found</p>
+          <Button className="mt-4" onClick={() => navigate("/destinations")}>
+            Back to Destinations
+          </Button>
         </div>
       </Layout>
     );
@@ -139,10 +142,53 @@ const DestinationDetail: React.FC = () => {
                   </div>
                 </div>
                 
-                {/* Crowd Chart */}
+                {/* Crowd Chart - Only show detailed data for premium users */}
                 <div className="bg-white p-4 rounded-lg border">
-                  <h3 className="text-xl font-semibold mb-3">Crowd Levels</h3>
-                  <CrowdChart crowdData={destination.crowdData} />
+                  <h3 className="text-xl font-semibold mb-3">
+                    Crowd Levels
+                    {!currentUser?.isPremium && (
+                      <Badge variant="outline" className="ml-2 bg-gray-100 text-gray-500">
+                        <Lock className="h-3 w-3 mr-1" /> Limited
+                      </Badge>
+                    )}
+                  </h3>
+                  
+                  {currentUser?.isPremium ? (
+                    <>
+                      <CrowdChart crowdData={destination.crowdData} />
+                      <p className="text-xs text-gray-500 mt-2">
+                        Premium feature: Detailed hourly crowd forecasts help you plan the best time to visit.
+                      </p>
+                    </>
+                  ) : (
+                    <div className="space-y-4">
+                      <div className="bg-gray-50 p-4 rounded border border-gray-200">
+                        <div className="flex items-start gap-3">
+                          <AlertCircle className="h-5 w-5 text-amber-500 mt-0.5 flex-shrink-0" />
+                          <div>
+                            <p className="font-medium">Basic Crowd Info</p>
+                            <p className="text-sm text-gray-600">
+                              Upgrade to premium for detailed hourly crowd forecasts and personalized visit recommendations.
+                            </p>
+                          </div>
+                        </div>
+                        <div className="mt-4 grid grid-cols-3 gap-2">
+                          <div className="bg-green-50 rounded p-2 text-center">
+                            <p className="text-xs text-green-800">Low</p>
+                            <p className="text-xs text-green-600">Early Morning</p>
+                          </div>
+                          <div className="bg-yellow-50 rounded p-2 text-center">
+                            <p className="text-xs text-yellow-800">Moderate</p>
+                            <p className="text-xs text-yellow-600">Late Afternoon</p>
+                          </div>
+                          <div className="bg-red-50 rounded p-2 text-center">
+                            <p className="text-xs text-red-800">High</p>
+                            <p className="text-xs text-red-600">Mid-day</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </TabsContent>
               
@@ -284,15 +330,15 @@ const DestinationDetail: React.FC = () => {
                   <ul className="text-sm text-amber-800 space-y-2 mb-4 pl-2">
                     <li className="flex items-start gap-2">
                       <Star className="h-4 w-4 text-amber-600 fill-amber-600 mt-0.5 flex-shrink-0" />
-                      <span>Exclusive crowd forecasts</span>
+                      <span>Detailed hourly crowd forecasts</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <Star className="h-4 w-4 text-amber-600 fill-amber-600 mt-0.5 flex-shrink-0" />
+                      <span>Best time to visit recommendations</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <Star className="h-4 w-4 text-amber-600 fill-amber-600 mt-0.5 flex-shrink-0" />
                       <span>Personalized itinerary planning</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <Star className="h-4 w-4 text-amber-600 fill-amber-600 mt-0.5 flex-shrink-0" />
-                      <span>Priority customer support</span>
                     </li>
                   </ul>
                   <Button 
@@ -300,7 +346,7 @@ const DestinationDetail: React.FC = () => {
                     className="w-full border-amber-400 text-amber-800 hover:bg-amber-200 hover:text-amber-900"
                     onClick={() => navigate('/premium')}
                   >
-                    Explore Premium Features
+                    Unlock Premium Features
                   </Button>
                 </CardContent>
               </Card>
