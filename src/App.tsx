@@ -41,8 +41,8 @@ function App() {
                     <Route path="/bookings/:id" element={<BookingDetails />} />
                     <Route path="*" element={<NotFound />} />
                   </Routes>
+                  <Toaster />
                 </BrowserRouter>
-                <Toaster />
               </TripPlanningProvider>
             </BookingProvider>
           </DestinationProvider>
