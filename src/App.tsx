@@ -16,6 +16,7 @@ import Index from './pages/Index';
 import NotFound from './pages/NotFound';
 import BookingDetails from './pages/BookingDetails';
 import DestinationDetail from './components/DestinationDetail';
+import TripPlannerPage from './pages/TripPlannerPage';
 
 // Initialize QueryClient
 const queryClient = new QueryClient({
@@ -41,6 +42,13 @@ function App() {
                     <Route path="/destinations" element={<Index />} />
                     <Route path="/destinations/:id" element={<DestinationDetail />} />
                     <Route path="/bookings/:id" element={<BookingDetails />} />
+                    <Route path="/trip-planner" element={<TripPlannerPage />} />
+                    <Route path="/bookings" element={<BookingDetails />} />
+                    <Route path="/profile" element={<ProfilePage />} />
+                    <Route path="/about" element={<AboutPage />} />
+                    <Route path="/contact" element={<ContactPage />} />
+                    <Route path="/privacy" element={<PrivacyPage />} />
+                    <Route path="/terms" element={<TermsPage />} />
                     <Route path="*" element={<NotFound />} />
                   </Routes>
                   <Toaster />
