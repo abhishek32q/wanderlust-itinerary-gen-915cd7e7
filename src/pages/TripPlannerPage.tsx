@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState } from 'react';
 import Layout from '../components/Layout';
-import TripPlanningForm from '../components/TripPlanningForm';
+import TripPlanningForm from '../components/trip-planning/TripPlanningForm';
 import { useLocation } from 'react-router-dom';
 import { useDestinations } from '../context/DestinationContext';
 import { Destination } from '../types';

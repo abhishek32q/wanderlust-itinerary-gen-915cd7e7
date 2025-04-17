@@ -9,7 +9,7 @@ import LiveChatButton from './components/LiveChatButton';
 import { AuthProvider } from './context/AuthContext';
 import { DestinationProvider } from './context/DestinationContext';
 import { BookingProvider } from './context/BookingContext';
-import { TripPlanningProvider } from './context/TripPlanningContext';
+import { TripPlanningProvider } from './context/trip-planning/TripPlanningContext';
 
 // Pages
 import HomePage from './pages/HomePage';
