@@ -1,29 +1,24 @@
 
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { MapPin, Star, Users } from 'lucide-react';
+import { MapPin, Star, Lock } from 'lucide-react';
 import { Destination } from '../types';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
-import { getCrowdLevelBgClass, formatPrice, ensureValidImageUrl } from '../utils/helpers';
+import { formatPrice, ensureValidImageUrl } from '../utils/helpers';
 import { useDestinations } from '../context/DestinationContext';
+import { useAuth } from '../context/AuthContext';
 
 interface DestinationCardProps {
   destination: Destination;
 }
 
 const DestinationCard: React.FC<DestinationCardProps> = ({ destination }) => {
-  const { getCurrentCrowdLevel, getBestTimeToVisit } = useDestinations();
-  const crowdLevel = getCurrentCrowdLevel(destination.crowdData);
-  const bestTimeToVisit = getBestTimeToVisit(destination.crowdData);
+  const { getCurrentCrowdLevel } = useDestinations();
+  const { currentUser } = useAuth();
+  const isPremium = currentUser?.isPremium;
   const [imageError, setImageError] = useState(false);
   
-  const crowdLevelText = {
-    low: 'Low Crowd',
-    medium: 'Moderate Crowd',
-    high: 'High Crowd',
-  };
-
   const getStartingPrice = () => {
     if (!destination.price) return 'Free Entry';
     
@@ -57,12 +52,19 @@ const DestinationCard: React.FC<DestinationCardProps> = ({ destination }) => {
             loading="lazy"
             onError={handleImageError}
           />
-          <Badge 
-            className={`absolute top-3 right-3 ${getCrowdLevelBgClass(crowdLevel)}`}
-          >
-            <Users className="w-3 h-3 mr-1" />
-            {crowdLevelText[crowdLevel]}
-          </Badge>
+          {isPremium && (
+            <Badge 
+              className={`absolute top-3 right-3 ${
+                getCurrentCrowdLevel(destination.crowdData) === 'low' ? 'bg-green-500' : 
+                getCurrentCrowdLevel(destination.crowdData) === 'medium' ? 'bg-yellow-500' : 
+                'bg-red-500'
+              }`}
+            >
+              {getCurrentCrowdLevel(destination.crowdData) === 'low' ? 'Low Crowd' : 
+              getCurrentCrowdLevel(destination.crowdData) === 'medium' ? 'Moderate' : 
+              'High Crowd'}
+            </Badge>
+          )}
         </div>
         <CardContent className="p-4">
           <div className="flex justify-between items-start gap-2">
@@ -83,12 +85,13 @@ const DestinationCard: React.FC<DestinationCardProps> = ({ destination }) => {
           </p>
           
           <div className="mt-3 flex items-center justify-between">
-            <div>
-              <p className="text-xs text-muted-foreground">Best time</p>
-              <p className="font-medium text-sm">{bestTimeToVisit}</p>
-            </div>
-            <div className="text-right">
-              <p className="text-xs text-muted-foreground">Entry</p>
+            {!isPremium && (
+              <div className="flex items-center text-xs text-muted-foreground">
+                <Lock className="w-3 h-3 mr-1" />
+                <span>Premium insights available</span>
+              </div>
+            )}
+            <div className="text-right ml-auto">
               <p className="font-semibold text-primary">
                 {getStartingPrice()}
               </p>
