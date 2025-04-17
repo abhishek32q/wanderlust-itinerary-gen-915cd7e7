@@ -16,7 +16,7 @@ const CrowdLevelDisplay: React.FC<CrowdLevelDisplayProps> = ({ destination, isPr
         Crowd Levels
         {!isPremiumUser && (
           <Badge variant="outline" className="ml-2 bg-gray-100 text-gray-500">
-            <Lock className="h-3 w-3 mr-1" /> Limited
+            <Lock className="h-3 w-3 mr-1" /> Premium
           </Badge>
         )}
       </h3>
@@ -34,24 +34,10 @@ const CrowdLevelDisplay: React.FC<CrowdLevelDisplayProps> = ({ destination, isPr
             <div className="flex items-start gap-3">
               <AlertCircle className="h-5 w-5 text-amber-500 mt-0.5 flex-shrink-0" />
               <div>
-                <p className="font-medium">Basic Crowd Info</p>
+                <p className="font-medium">Premium Feature</p>
                 <p className="text-sm text-gray-600">
                   Upgrade to premium for detailed hourly crowd forecasts and personalized visit recommendations.
                 </p>
-              </div>
-            </div>
-            <div className="mt-4 grid grid-cols-3 gap-2">
-              <div className="bg-green-50 rounded p-2 text-center">
-                <p className="text-xs text-green-800">Low</p>
-                <p className="text-xs text-green-600">Early Morning</p>
-              </div>
-              <div className="bg-yellow-50 rounded p-2 text-center">
-                <p className="text-xs text-yellow-800">Moderate</p>
-                <p className="text-xs text-yellow-600">Late Afternoon</p>
-              </div>
-              <div className="bg-red-50 rounded p-2 text-center">
-                <p className="text-xs text-red-800">High</p>
-                <p className="text-xs text-red-600">Mid-day</p>
               </div>
             </div>
           </div>

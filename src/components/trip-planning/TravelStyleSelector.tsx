@@ -1,57 +1,70 @@
 
 import React from 'react';
-import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
-import { Home, Map } from 'lucide-react';
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Card } from "@/components/ui/card";
+import { Home, Globe } from 'lucide-react';
 
 interface TravelStyleSelectorProps {
-  travelStyle: 'base-hotel' | 'mobile';
-  setTravelStyle: (style: 'base-hotel' | 'mobile') => void;
+  value: 'base-hotel' | 'mobile';
+  onChange: (value: 'base-hotel' | 'mobile') => void;
   disabled?: boolean;
 }
 
 const TravelStyleSelector: React.FC<TravelStyleSelectorProps> = ({
-  travelStyle,
-  setTravelStyle,
+  value,
+  onChange,
   disabled = false
 }) => {
   return (
-    <div>
-      <Label className="block mb-2">Travel Style</Label>
-      <div className="grid grid-cols-2 gap-3">
-        <Button
-          type="button"
-          variant={travelStyle === 'base-hotel' ? 'default' : 'outline'}
-          className="flex flex-col items-center justify-center h-24 px-3 py-4"
-          onClick={() => setTravelStyle('base-hotel')}
-          disabled={disabled}
+    <div className="space-y-2">
+      <Label>Travel Style</Label>
+      <RadioGroup
+        value={value}
+        onValueChange={(val) => onChange(val as 'base-hotel' | 'mobile')}
+        className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2"
+        disabled={disabled}
+      >
+        <Label
+          htmlFor="base-hotel"
+          className="cursor-pointer"
         >
-          <Home className="h-8 w-8 mb-2" />
-          <div className="text-center">
-            <p className="font-medium">Base Hotel</p>
-            <p className="text-xs">Stay in one place</p>
-          </div>
-        </Button>
-
-        <Button
-          type="button"
-          variant={travelStyle === 'mobile' ? 'default' : 'outline'}
-          className="flex flex-col items-center justify-center h-24 px-3 py-4"
-          onClick={() => setTravelStyle('mobile')}
-          disabled={disabled}
+          <Card className={`p-4 border-2 ${value === 'base-hotel' ? 'border-primary' : 'border-border'}`}>
+            <div className="flex items-start gap-3">
+              <RadioGroupItem value="base-hotel" id="base-hotel" className="mt-1" />
+              <div>
+                <div className="flex items-center">
+                  <Home className="h-4 w-4 mr-2" />
+                  <span className="font-medium">Base Hotel</span>
+                </div>
+                <p className="text-sm text-gray-600 mt-1">
+                  Stay in one hotel and take day trips to nearby destinations.
+                </p>
+              </div>
+            </div>
+          </Card>
+        </Label>
+        
+        <Label
+          htmlFor="mobile"
+          className="cursor-pointer"
         >
-          <Map className="h-8 w-8 mb-2" />
-          <div className="text-center">
-            <p className="font-medium">Changing Hotels</p>
-            <p className="text-xs">Stay near each destination</p>
-          </div>
-        </Button>
-      </div>
-      {disabled && (
-        <p className="text-xs text-muted-foreground mt-2">
-          Select multiple destinations to enable this option
-        </p>
-      )}
+          <Card className={`p-4 border-2 ${value === 'mobile' ? 'border-primary' : 'border-border'}`}>
+            <div className="flex items-start gap-3">
+              <RadioGroupItem value="mobile" id="mobile" className="mt-1" />
+              <div>
+                <div className="flex items-center">
+                  <Globe className="h-4 w-4 mr-2" />
+                  <span className="font-medium">Mobile Tour</span>
+                </div>
+                <p className="text-sm text-gray-600 mt-1">
+                  Change hotels as you move from destination to destination.
+                </p>
+              </div>
+            </div>
+          </Card>
+        </Label>
+      </RadioGroup>
     </div>
   );
 };

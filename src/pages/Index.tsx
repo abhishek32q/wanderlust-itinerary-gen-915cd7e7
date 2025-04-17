@@ -3,9 +3,13 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import Layout from '../components/Layout';
-import { MapPin, Search, Calendar, Star, TrendingUp } from 'lucide-react';
+import { MapPin, Search, Calendar, Star, TrendingUp, Lock } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 const Index = () => {
+  const { currentUser } = useAuth();
+  const isPremiumUser = !!currentUser?.isPremium;
+
   return (
     <Layout>
       {/* Hero Section */}
@@ -110,9 +114,11 @@ const Index = () => {
                       <span className="text-sm">Agra, Uttar Pradesh</span>
                     </div>
                   </div>
-                  <div className="absolute top-3 right-3 bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">
-                    Low Crowd
-                  </div>
+                  {isPremiumUser && (
+                    <div className="absolute top-3 right-3 bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">
+                      Low Crowd
+                    </div>
+                  )}
                 </div>
                 <div className="p-4">
                   <p className="text-sm text-gray-600 mb-3 line-clamp-2">
@@ -145,9 +151,11 @@ const Index = () => {
                       <span className="text-sm">Panaji, Goa</span>
                     </div>
                   </div>
-                  <div className="absolute top-3 right-3 bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded-full">
-                    Moderate Crowd
-                  </div>
+                  {isPremiumUser && (
+                    <div className="absolute top-3 right-3 bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded-full">
+                      Moderate Crowd
+                    </div>
+                  )}
                 </div>
                 <div className="p-4">
                   <p className="text-sm text-gray-600 mb-3 line-clamp-2">
@@ -180,9 +188,11 @@ const Index = () => {
                       <span className="text-sm">Alleppey, Kerala</span>
                     </div>
                   </div>
-                  <div className="absolute top-3 right-3 bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">
-                    Low Crowd
-                  </div>
+                  {isPremiumUser && (
+                    <div className="absolute top-3 right-3 bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">
+                      Low Crowd
+                    </div>
+                  )}
                 </div>
                 <div className="p-4">
                   <p className="text-sm text-gray-600 mb-3 line-clamp-2">
