@@ -1,146 +1,98 @@
 
 import React from 'react';
 import Layout from '../components/Layout';
-import { Shield, CheckCircle, Lock, Eye } from 'lucide-react';
+import { Separator } from '@/components/ui/separator';
 
 const PrivacyPage: React.FC = () => {
   return (
     <Layout>
       <div className="container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold mb-4">Privacy Policy</h1>
-        <p className="text-gray-600 mb-6">Last updated: April 16, 2025</p>
-        
-        <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-          <div className="flex items-start gap-4 mb-6">
-            <Shield className="h-10 w-10 text-primary flex-shrink-0" />
-            <div>
-              <h2 className="text-xl font-semibold mb-2">Our Commitment to Privacy</h2>
-              <p className="text-gray-600">
-                At ZenWay Travels, we respect your privacy and are committed to protecting your personal data. This privacy policy explains how we collect, use, and safeguard your information when you use our website and services.
-              </p>
-            </div>
-          </div>
+        <div className="max-w-3xl mx-auto">
+          <h1 className="text-3xl font-bold mb-6">Privacy Policy</h1>
+          <p className="text-gray-600 mb-6">Last Updated: April 15, 2025</p>
           
-          <div className="space-y-6">
-            <div>
-              <h3 className="text-lg font-semibold mb-2">Information We Collect</h3>
-              <p className="text-gray-600 mb-3">
-                We collect the following types of information:
-              </p>
-              <ul className="list-disc list-inside text-gray-600 space-y-1 ml-4">
-                <li>Personal identification information (Name, email address, phone number)</li>
-                <li>Billing information (Credit card details, billing address)</li>
-                <li>Travel preferences and requirements</li>
-                <li>Passport details (when required for bookings)</li>
-                <li>Device information (IP address, browser type, operating system)</li>
-                <li>Usage data (Pages visited, time spent on pages, links clicked)</li>
-              </ul>
-            </div>
+          <div className="prose prose-slate max-w-none">
+            <p className="mb-4">
+              At ZenWay Travels, we take your privacy seriously. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you visit our website or use our services.
+            </p>
             
-            <div>
-              <h3 className="text-lg font-semibold mb-2">How We Use Your Information</h3>
-              <p className="text-gray-600 mb-3">
-                We use your information for the following purposes:
-              </p>
-              <ul className="list-disc list-inside text-gray-600 space-y-1 ml-4">
-                <li>Process and manage your bookings and transactions</li>
-                <li>Communicate with you about your trips and services</li>
-                <li>Provide customer support and respond to inquiries</li>
-                <li>Personalize your experience and recommendations</li>
-                <li>Improve our website and services</li>
-                <li>Send promotional content and newsletters (if opted in)</li>
-                <li>Comply with legal obligations</li>
-              </ul>
-            </div>
+            <h2 className="text-xl font-bold mt-8 mb-4">Information We Collect</h2>
+            <p className="mb-4">We may collect personal information that you voluntarily provide to us when you:</p>
+            <ul className="list-disc pl-6 mb-4 space-y-2">
+              <li>Register an account with us</li>
+              <li>Make a booking or purchase</li>
+              <li>Sign up for our newsletter</li>
+              <li>Contact our customer service</li>
+              <li>Participate in contests, surveys, or promotions</li>
+            </ul>
+            <p className="mb-4">This information may include:</p>
+            <ul className="list-disc pl-6 mb-4 space-y-2">
+              <li>Name, email address, phone number, and billing address</li>
+              <li>Payment information (credit card details, though we do not store complete credit card information)</li>
+              <li>Travel preferences and requirements</li>
+              <li>Passport details when required for booking</li>
+            </ul>
             
-            <div className="flex items-start gap-4">
-              <Lock className="h-6 w-6 text-primary flex-shrink-0" />
-              <div>
-                <h3 className="text-lg font-semibold mb-2">Data Security</h3>
-                <p className="text-gray-600">
-                  We implement appropriate technical and organizational measures to protect your personal data against unauthorized or unlawful processing, accidental loss, destruction, or damage. All payment information is encrypted using industry-standard SSL technology.
-                </p>
-              </div>
-            </div>
+            <h2 className="text-xl font-bold mt-8 mb-4">How We Use Your Information</h2>
+            <p className="mb-4">We may use the information we collect for various purposes, including:</p>
+            <ul className="list-disc pl-6 mb-4 space-y-2">
+              <li>Process and manage your bookings</li>
+              <li>Process payments and prevent fraudulent transactions</li>
+              <li>Send administrative information, such as booking confirmations</li>
+              <li>Respond to your inquiries and resolve disputes</li>
+              <li>Send marketing communications (with your consent)</li>
+              <li>Improve our website, products, and services</li>
+              <li>Comply with legal obligations</li>
+            </ul>
             
-            <div>
-              <h3 className="text-lg font-semibold mb-2">Data Sharing</h3>
-              <p className="text-gray-600 mb-3">
-                We may share your information with:
-              </p>
-              <ul className="list-disc list-inside text-gray-600 space-y-1 ml-4">
-                <li>Service providers (hotels, transport operators, activity providers)</li>
-                <li>Payment processors and financial institutions</li>
-                <li>Government authorities (when required by law)</li>
-                <li>Professional advisors and consultants</li>
-              </ul>
-              <p className="text-gray-600 mt-3">
-                We do not sell your personal data to third parties for marketing purposes.
-              </p>
-            </div>
+            <Separator className="my-8" />
             
-            <div className="flex items-start gap-4">
-              <Eye className="h-6 w-6 text-primary flex-shrink-0" />
-              <div>
-                <h3 className="text-lg font-semibold mb-2">Cookies and Tracking</h3>
-                <p className="text-gray-600">
-                  Our website uses cookies and similar tracking technologies to enhance user experience, analyze usage patterns, and deliver personalized content. You can manage your cookie preferences through your browser settings.
-                </p>
-              </div>
-            </div>
+            <h2 className="text-xl font-bold mt-8 mb-4">Sharing Your Information</h2>
+            <p className="mb-4">We may share your information with:</p>
+            <ul className="list-disc pl-6 mb-4 space-y-2">
+              <li>Travel service providers (hotels, transport companies) necessary to complete your booking</li>
+              <li>Payment processors to process transactions</li>
+              <li>Marketing partners (with your consent)</li>
+              <li>Legal authorities when required by law</li>
+            </ul>
             
-            <div>
-              <h3 className="text-lg font-semibold mb-2">Your Rights</h3>
-              <p className="text-gray-600 mb-3">
-                You have the following rights regarding your personal data:
-              </p>
-              <ul className="list-disc list-inside text-gray-600 space-y-1 ml-4">
-                <li>Access your personal data</li>
-                <li>Rectify inaccurate or incomplete data</li>
-                <li>Request erasure of your data</li>
-                <li>Restrict or object to processing</li>
-                <li>Data portability</li>
-                <li>Withdraw consent at any time</li>
-              </ul>
-            </div>
+            <h2 className="text-xl font-bold mt-8 mb-4">Cookies and Tracking Technologies</h2>
+            <p className="mb-4">
+              We use cookies and similar tracking technologies to track activity on our website and store certain information. You can instruct your browser to refuse all cookies or to indicate when a cookie is being sent.
+            </p>
             
-            <div>
-              <h3 className="text-lg font-semibold mb-2">Data Retention</h3>
-              <p className="text-gray-600">
-                We retain your personal data only for as long as necessary to fulfill the purposes for which it was collected, including legal, accounting, or reporting requirements.
-              </p>
-            </div>
+            <h2 className="text-xl font-bold mt-8 mb-4">Data Security</h2>
+            <p className="mb-4">
+              We have implemented appropriate technical and organizational security measures designed to protect the security of any personal information we process. However, despite our safeguards, no security system is impenetrable.
+            </p>
             
-            <div>
-              <h3 className="text-lg font-semibold mb-2">Children's Privacy</h3>
-              <p className="text-gray-600">
-                Our services are not directed to individuals under 18 years of age. We do not knowingly collect personal information from children. If we become aware that we have collected personal data from a child without verification of parental consent, we will take steps to remove that information from our servers.
-              </p>
-            </div>
+            <h2 className="text-xl font-bold mt-8 mb-4">Your Privacy Rights</h2>
+            <p className="mb-4">
+              Depending on your location, you may have various rights regarding your personal information, such as:
+            </p>
+            <ul className="list-disc pl-6 mb-4 space-y-2">
+              <li>Right to access and obtain a copy of your personal information</li>
+              <li>Right to rectify any inaccurate information</li>
+              <li>Right to request deletion of your personal information</li>
+              <li>Right to restrict processing of your personal information</li>
+              <li>Right to data portability</li>
+              <li>Right to object to processing</li>
+            </ul>
             
-            <div className="flex items-start gap-4 bg-primary/5 p-4 rounded-lg">
-              <CheckCircle className="h-6 w-6 text-primary flex-shrink-0" />
-              <div>
-                <h3 className="text-lg font-semibold mb-2">Contact Us</h3>
-                <p className="text-gray-600">
-                  If you have any questions about this Privacy Policy or our data practices, please contact us at:
-                </p>
-                <address className="text-gray-600 not-italic mt-2">
-                  <strong>ZenWay Travels</strong><br />
-                  123 Travel Lane, Zen District<br />
-                  New Delhi, 110001, India<br />
-                  Email: privacy@zenwaytravels.com<br />
-                  Phone: +91 98765 43210
-                </address>
-              </div>
-            </div>
+            <h2 className="text-xl font-bold mt-8 mb-4">Changes to This Privacy Policy</h2>
+            <p className="mb-4">
+              We may update our Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on this page and updating the "Last Updated" date.
+            </p>
+            
+            <h2 className="text-xl font-bold mt-8 mb-4">Contact Us</h2>
+            <p>
+              If you have any questions about this Privacy Policy, please contact us at:
+              <br />
+              Email: privacy@zenwaytravels.com
+              <br />
+              Phone: +91 11 2345 6789
+            </p>
           </div>
-        </div>
-        
-        <div className="text-center text-sm text-gray-500 mt-8">
-          <p>
-            We may update this Privacy Policy from time to time. The latest version will always be posted on our website.
-          </p>
         </div>
       </div>
     </Layout>

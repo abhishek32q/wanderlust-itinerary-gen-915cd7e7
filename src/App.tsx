@@ -3,6 +3,7 @@ import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/toaster";
+import LiveChatButton from './components/LiveChatButton';
 
 // Context Providers
 import { AuthProvider } from './context/AuthContext';
@@ -56,6 +57,7 @@ function App() {
                     <Route path="/terms" element={<TermsPage />} />
                     <Route path="*" element={<NotFound />} />
                   </Routes>
+                  <LiveChatButton />
                   <Toaster />
                 </TooltipProvider>
               </BrowserRouter>

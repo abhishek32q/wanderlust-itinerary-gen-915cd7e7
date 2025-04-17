@@ -1,106 +1,69 @@
 
 import React from 'react';
 import Layout from '../components/Layout';
+import { Separator } from '@/components/ui/separator';
 
 const TermsPage: React.FC = () => {
   return (
     <Layout>
       <div className="container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold mb-6">Terms and Conditions</h1>
-        
-        <div className="space-y-6 bg-white rounded-lg shadow-md p-6">
-          <div>
-            <h2 className="text-xl font-semibold mb-3">1. Acceptance of Terms</h2>
-            <p className="text-gray-700">
-              By accessing and using the ZenWay Travels website and services, you accept and agree to be 
-              bound by these Terms and Conditions and our Privacy Policy. If you do not agree to these 
-              terms, please do not use our services.
-            </p>
-          </div>
+        <div className="max-w-3xl mx-auto">
+          <h1 className="text-3xl font-bold mb-6">Terms of Service</h1>
+          <p className="text-gray-600 mb-6">Last Updated: April 15, 2025</p>
           
-          <div>
-            <h2 className="text-xl font-semibold mb-3">2. Booking and Payment</h2>
-            <p className="text-gray-700 mb-2">
-              All bookings are subject to availability and confirmation. A booking is confirmed once 
-              full payment has been received or as specified in your itinerary.
+          <div className="prose prose-slate max-w-none">
+            <p className="mb-4">
+              Welcome to ZenWay Travels. Please read these Terms of Service carefully before using our website or booking our services.
             </p>
-            <ul className="list-disc list-inside text-gray-700 space-y-1 ml-4">
-              <li>Payment methods accepted include credit/debit cards, net banking, and UPI</li>
-              <li>Prices are subject to change without prior notice until booking is confirmed</li>
-              <li>Additional fees may apply for changes to confirmed bookings</li>
+            
+            <h2 className="text-xl font-bold mt-8 mb-4">1. Acceptance of Terms</h2>
+            <p className="mb-4">
+              By accessing or using our website, booking our services, or creating an account, you agree to be bound by these Terms of Service. If you do not agree to these terms, please do not use our services.
+            </p>
+            
+            <h2 className="text-xl font-bold mt-8 mb-4">2. Booking and Payments</h2>
+            <p className="mb-4">2.1 <strong>Booking Confirmation:</strong> Your booking is confirmed only after we send you a written confirmation and your payment has been processed successfully.</p>
+            <p className="mb-4">2.2 <strong>Payment:</strong> Full payment is required at the time of booking unless otherwise specified. We accept various payment methods as indicated on our website.</p>
+            <p className="mb-4">2.3 <strong>Pricing:</strong> All prices are in Indian Rupees (INR) unless otherwise stated. Prices are subject to change without notice until payment is made in full.</p>
+            
+            <Separator className="my-8" />
+            
+            <h2 className="text-xl font-bold mt-8 mb-4">3. Cancellations and Refunds</h2>
+            <p className="mb-4">3.1 <strong>Cancellation by Customer:</strong> Cancellation policies vary depending on the type of service booked. Refunds will be processed according to the following schedule:</p>
+            <ul className="list-disc pl-6 mb-4 space-y-2">
+              <li>More than 30 days before departure: 90% refund</li>
+              <li>15-30 days before departure: 50% refund</li>
+              <li>7-14 days before departure: 25% refund</li>
+              <li>Less than 7 days before departure: No refund</li>
             </ul>
-          </div>
-          
-          <div>
-            <h2 className="text-xl font-semibold mb-3">3. Cancellation and Refund Policy</h2>
-            <p className="text-gray-700 mb-2">
-              Our refund policy varies depending on when you cancel your booking:
-            </p>
-            <ul className="list-disc list-inside text-gray-700 space-y-1 ml-4">
-              <li>Cancellations made 48 hours or more before scheduled departure: Full refund minus processing fee</li>
-              <li>Cancellations made between 24-48 hours before scheduled departure: 50% refund</li>
-              <li>Cancellations made less than 24 hours before scheduled departure: No refund</li>
-              <li>No-shows: No refund will be provided</li>
-            </ul>
-          </div>
-          
-          <div>
-            <h2 className="text-xl font-semibold mb-3">4. Travel Documents</h2>
-            <p className="text-gray-700">
-              It is the traveler's responsibility to ensure they have all necessary valid travel documents, 
-              including but not limited to identification, permits, and visas where required. ZenWay Travels 
-              is not responsible for any issues arising from incomplete or invalid travel documentation.
-            </p>
-          </div>
-          
-          <div>
-            <h2 className="text-xl font-semibold mb-3">5. Health and Safety</h2>
-            <p className="text-gray-700">
-              Travelers are responsible for ensuring they are fit to travel. ZenWay Travels reserves the right 
-              to refuse service to anyone whose health or behavior might compromise the safety or enjoyment of 
-              other travelers. We recommend obtaining travel insurance that covers health emergencies.
-            </p>
-          </div>
-          
-          <div>
-            <h2 className="text-xl font-semibold mb-3">6. Limitation of Liability</h2>
-            <p className="text-gray-700">
-              ZenWay Travels acts as an intermediary between travelers and service providers (hotels, 
-              transportation companies, activity operators). While we carefully select our partners, we 
-              cannot be held liable for their actions or omissions. Our liability for any claims is limited 
-              to the cost of the services provided by us.
-            </p>
-          </div>
-          
-          <div>
-            <h2 className="text-xl font-semibold mb-3">7. Privacy Policy</h2>
-            <p className="text-gray-700">
-              We collect and process personal data in accordance with our Privacy Policy, which is 
-              incorporated into these Terms and Conditions by reference.
-            </p>
-          </div>
-          
-          <div>
-            <h2 className="text-xl font-semibold mb-3">8. Modifications to Terms</h2>
-            <p className="text-gray-700">
-              ZenWay Travels reserves the right to modify these Terms and Conditions at any time. 
-              Changes will be effective immediately upon posting on our website. Your continued use of 
-              our services after changes constitutes acceptance of the modified terms.
-            </p>
-          </div>
-          
-          <div>
-            <h2 className="text-xl font-semibold mb-3">9. Governing Law</h2>
-            <p className="text-gray-700">
-              These Terms and Conditions shall be governed by and construed in accordance with the laws 
-              of India. Any disputes arising from these terms shall be subject to the exclusive jurisdiction 
-              of the courts in Delhi, India.
-            </p>
-          </div>
-          
-          <div>
-            <p className="text-sm text-gray-500 mt-8">
-              Last Updated: April 16, 2025
+            <p className="mb-4">3.2 <strong>Cancellation by ZenWay Travels:</strong> In the rare event that we need to cancel your booking, you will be offered either a full refund or an alternative service of equivalent value.</p>
+            
+            <h2 className="text-xl font-bold mt-8 mb-4">4. Travel Documents and Requirements</h2>
+            <p className="mb-4">4.1 <strong>Travel Documentation:</strong> It is your responsibility to ensure you have all necessary travel documents (valid ID, passport, visa if applicable) for your journey.</p>
+            <p className="mb-4">4.2 <strong>Health Requirements:</strong> You are responsible for complying with any health requirements or recommendations for your destination.</p>
+            
+            <h2 className="text-xl font-bold mt-8 mb-4">5. Customer Responsibilities</h2>
+            <p className="mb-4">5.1 <strong>Accurate Information:</strong> You must provide accurate personal information during booking.</p>
+            <p className="mb-4">5.2 <strong>Behavior:</strong> You agree to behave in a manner that does not cause distress, danger, or annoyance to others.</p>
+            <p className="mb-4">5.3 <strong>Compliance with Laws:</strong> You agree to comply with all local laws and regulations during your trip.</p>
+            
+            <h2 className="text-xl font-bold mt-8 mb-4">6. Limitation of Liability</h2>
+            <p className="mb-4">6.1 ZenWay Travels acts as an agent for transportation, hotel accommodations, and other services. We are not liable for any injury, damage, loss, accident, delay, or irregularity that may be caused by defect of any vehicle, acts of God, or any other cause beyond our control.</p>
+            <p className="mb-4">6.2 We are not responsible for any loss or damage to your personal belongings during the trip.</p>
+            
+            <h2 className="text-xl font-bold mt-8 mb-4">7. Changes to These Terms</h2>
+            <p className="mb-4">We reserve the right to modify these Terms of Service at any time. Changes will be effective immediately upon posting on our website.</p>
+            
+            <h2 className="text-xl font-bold mt-8 mb-4">8. Governing Law</h2>
+            <p className="mb-4">These Terms of Service shall be governed by and construed in accordance with the laws of India. Any disputes will be subject to the exclusive jurisdiction of the courts in New Delhi, India.</p>
+            
+            <h2 className="text-xl font-bold mt-8 mb-4">9. Contact Us</h2>
+            <p>
+              If you have any questions about these Terms of Service, please contact us at:
+              <br />
+              Email: legal@zenwaytravels.com
+              <br />
+              Phone: +91 11 2345 6789
             </p>
           </div>
         </div>
