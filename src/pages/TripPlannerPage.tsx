@@ -67,25 +67,23 @@ const TripPlannerPage: React.FC = () => {
                   {destinations.map(destination => (
                     <div
                       key={destination.id}
-                      className={`border rounded-lg p-4 cursor-pointer transition-colors ${
+                      className={`border rounded-lg overflow-hidden cursor-pointer transition-colors ${
                         selectedDestinations.some(dest => dest.id === destination.id)
                           ? "border-primary bg-primary/5"
                           : "border-gray-200 hover:border-gray-300"
                       }`}
                       onClick={() => handleDestinationToggle(destination)}
                     >
-                      <div className="flex items-center gap-3">
-                        <div className="w-16 h-16 rounded-md overflow-hidden flex-shrink-0">
-                          <img
-                            src={destination.image}
-                            alt={destination.name}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                        <div>
-                          <h3 className="font-medium">{destination.name}</h3>
-                          <p className="text-sm text-gray-500">{destination.city}, {destination.state}</p>
-                        </div>
+                      <div className="aspect-w-16 aspect-h-9">
+                        <img
+                          src={destination.image}
+                          alt={destination.name}
+                          className="w-full h-48 object-cover"
+                        />
+                      </div>
+                      <div className="p-4">
+                        <h3 className="font-medium">{destination.name}</h3>
+                        <p className="text-sm text-gray-500">{destination.city}, {destination.state}</p>
                       </div>
                     </div>
                   ))}

@@ -3,7 +3,8 @@ import React, { useState, useEffect } from 'react';
 import { Separator } from '@/components/ui/separator';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { Car, Bus, Train, Plane, Clock, Info } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Car, Bus, Train, Plane, Clock, Info, Award } from 'lucide-react';
 import { useTripPlanning } from '../../context/trip-planning/TripPlanningContext';
 import { 
   Tooltip,
@@ -11,6 +12,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { Badge } from '@/components/ui/badge';
 
 interface TransportSelectorProps {
   transportType: 'bus' | 'train' | 'flight' | 'car';
@@ -87,7 +89,7 @@ const TransportSelector: React.FC<TransportSelectorProps> = ({
       <Separator className="my-4" />
       <div>
         <div className="flex justify-between items-center mb-3">
-          <Label className="text-base">Transportation</Label>
+          <Label className="text-base font-medium">Transportation Type</Label>
           {suggestedTransport && (
             <span className="text-sm text-primary flex items-center">
               <Clock className="h-4 w-4 mr-1" />
@@ -101,18 +103,25 @@ const TransportSelector: React.FC<TransportSelectorProps> = ({
             <TooltipProvider key={option.type}>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button
-                    variant={transportType === option.type ? 'default' : 'outline'}
-                    onClick={() => !option.premium || isPremium ? setTransportType(option.type) : null}
-                    className="flex flex-col h-auto py-3"
-                    disabled={option.premium && !isPremium}
-                  >
-                    {option.icon}
-                    <span>{option.label}</span>
-                    <span className={`text-xs ${option.premium && !isPremium ? 'text-amber-500' : 'text-gray-500'}`}>
-                      {option.premium && !isPremium ? 'Premium' : option.description}
-                    </span>
-                  </Button>
+                  <div className="relative">
+                    <Button
+                      variant={transportType === option.type ? 'default' : 'outline'}
+                      onClick={() => !option.premium || isPremium ? setTransportType(option.type) : null}
+                      className="flex flex-col h-auto py-3 w-full"
+                      disabled={option.premium && !isPremium}
+                    >
+                      {option.icon}
+                      <span>{option.label}</span>
+                      <span className={`text-xs ${option.premium && !isPremium ? 'text-amber-500' : 'text-gray-500'}`}>
+                        {option.premium && !isPremium ? 'Premium' : option.description}
+                      </span>
+                    </Button>
+                    {option.premium && (
+                      <span className="absolute top-0 right-0 transform translate-x-1/3 -translate-y-1/3">
+                        <Award className="h-4 w-4 text-amber-500" />
+                      </span>
+                    )}
+                  </div>
                 </TooltipTrigger>
                 <TooltipContent className="w-64 p-3">
                   <p className="font-medium mb-2">{option.label} Transportation</p>
@@ -138,21 +147,22 @@ const TransportSelector: React.FC<TransportSelectorProps> = ({
       
       {/* Recommended Transport */}
       {suggestedTransport && (
-        <div className="bg-gray-50 p-3 rounded-lg mt-3">
-          <p className="text-sm flex items-center gap-1 text-gray-600 mb-2">
-            <span className="inline-block w-2 h-2 rounded-full bg-green-500"></span>
-            Recommended Transport:
-          </p>
-          
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              {transportOptions.find(o => o.type === suggestedTransport.recommendedType)?.icon || 
-               <Car className="h-5 w-5" />}
-              <span className="font-medium capitalize">{suggestedTransport.recommendedType}</span>
+        <Card className="mt-3">
+          <CardContent className="p-3">
+            <div className="flex items-center gap-2 mb-2">
+              <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                Recommended
+              </Badge>
+              <h4 className="font-medium">{suggestedTransport.recommendedType.charAt(0).toUpperCase() + suggestedTransport.recommendedType.slice(1)}</h4>
             </div>
             
-            <div className="flex items-center">
-              <p className="text-sm text-gray-600 mr-2">{suggestedTransport.reasoning}</p>
+            <div className="flex items-center justify-between text-sm">
+              <div className="flex items-center gap-2">
+                {transportOptions.find(o => o.type === suggestedTransport.recommendedType)?.icon || 
+                <Car className="h-5 w-5" />}
+                <span className="text-gray-600">{suggestedTransport.reasoning}</span>
+              </div>
+              
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger>
@@ -165,15 +175,15 @@ const TransportSelector: React.FC<TransportSelectorProps> = ({
                 </Tooltip>
               </TooltipProvider>
             </div>
-          </div>
-          
-          {!suggestedTransport.isRealistic && (
-            <p className="text-sm text-red-500 mt-2 flex items-center">
-              <Clock className="h-4 w-4 inline mr-1" />
-              This trip may be rushed. Consider adding more days.
-            </p>
-          )}
-        </div>
+            
+            {!suggestedTransport.isRealistic && (
+              <p className="text-sm text-red-500 mt-2 flex items-center">
+                <Clock className="h-4 w-4 inline mr-1" />
+                This trip may be rushed. Consider adding more days.
+              </p>
+            )}
+          </CardContent>
+        </Card>
       )}
     </>
   );

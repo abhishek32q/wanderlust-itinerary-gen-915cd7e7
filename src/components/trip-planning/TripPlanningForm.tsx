@@ -23,10 +23,14 @@ interface TripPlanningFormProps {
   onBackToSelection?: () => void;
 }
 
-const TripPlanningForm: React.FC<TripPlanningFormProps> = ({ selectedDestinations: initialDestinations, onBackToSelection }) => {
+const TripPlanningForm: React.FC<TripPlanningFormProps> = ({ 
+  selectedDestinations: initialDestinations, 
+  onBackToSelection 
+}) => {
   const navigate = useNavigate();
   const { currentUser } = useAuth();
   const { saveTripPlan } = useTripPlanning();
+  const { destinations } = useDestinations();
   const [selectedDestinations, setSelectedDestinations] = useState<Destination[]>(initialDestinations);
   
   // Form state
