@@ -42,22 +42,26 @@ const TripPlanningForm: React.FC<TripPlanningFormProps> = ({
   const [travelStyle, setTravelStyle] = useState<'base-hotel' | 'mobile'>('mobile');
   const [selectedGuideIds, setSelectedGuideIds] = useState<string[]>([]);
   const [submitting, setSubmitting] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const destinationIds = selectedDestinations.map(destination => destination.id);
 
   // Handle form submission
   const handleSubmitPlan = async () => {
+    setErrorMsg(null);
+    
     if (!currentUser) {
       toast({
         title: "Login Required",
         description: "Please login to plan a trip",
         variant: "destructive"
       });
-      navigate('/login');
+      navigate('/login', { state: { returnPath: '/trip-planner' } });
       return;
     }
     
     if (!startDate) {
+      setErrorMsg("Please select a start date for your trip");
       toast({
         title: "Missing Start Date",
         description: "Please select a start date for your trip",
@@ -67,6 +71,7 @@ const TripPlanningForm: React.FC<TripPlanningFormProps> = ({
     }
 
     if (selectedDestinations.length === 0) {
+      setErrorMsg("Please select at least one destination for your trip");
       toast({
         title: "No Destinations Selected",
         description: "Please select at least one destination for your trip",
@@ -90,16 +95,21 @@ const TripPlanningForm: React.FC<TripPlanningFormProps> = ({
         status: 'pending' as const,
       };
       
+      console.log("Creating trip plan with data:", tripPlanData);
       const tripId = await saveTripPlan(tripPlanData);
+      console.log("Trip created with ID:", tripId);
       
       toast({
         title: "Trip Planned!",
         description: "Your trip has been successfully planned.",
       });
       
-      navigate(`/bookings/${tripId}`);
+      setTimeout(() => {
+        navigate(`/bookings/${tripId}`);
+      }, 500);
     } catch (error) {
-      console.error(error);
+      console.error("Error creating trip plan:", error);
+      setErrorMsg("Failed to create trip plan. Please try again.");
       toast({
         title: "Error",
         description: "Failed to create trip plan. Please try again.",
@@ -139,6 +149,12 @@ const TripPlanningForm: React.FC<TripPlanningFormProps> = ({
         )}
         
         <h2 className="text-2xl font-semibold mb-6">Plan Your Trip</h2>
+        
+        {errorMsg && (
+          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded text-red-600">
+            {errorMsg}
+          </div>
+        )}
         
         <div className="grid md:grid-cols-2 gap-8">
           {/* Left Column - Trip Details */}

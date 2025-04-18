@@ -22,11 +22,13 @@ const DestinationSelector: React.FC<DestinationSelectorProps> = ({
             key={destination.id} 
             className="flex items-center bg-gray-50 border rounded-lg overflow-hidden pr-2"
           >
-            <img 
-              src={destination.image} 
-              alt={destination.name}
-              className="h-10 w-12 object-cover"
-            />
+            <div className="h-10 w-12 overflow-hidden">
+              <img 
+                src={destination.image} 
+                alt={destination.name}
+                className="h-full w-full object-cover"
+              />
+            </div>
             <span className="px-2 font-medium text-sm">{destination.name}</span>
             {onRemoveDestination && (
               <button 

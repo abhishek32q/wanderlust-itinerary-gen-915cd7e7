@@ -4,7 +4,7 @@ import { Separator } from '@/components/ui/separator';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Car, Bus, Train, Plane, Clock, Info, Award } from 'lucide-react';
+import { Car, Bus, Train, Plane, Clock, Info, Award, ChevronDown, ChevronUp } from 'lucide-react';
 import { useTripPlanning } from '../../context/trip-planning/TripPlanningContext';
 import { 
   Tooltip,
@@ -13,6 +13,13 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { Badge } from '@/components/ui/badge';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import { transports } from '../../data/transports';
 
 interface TransportSelectorProps {
   transportType: 'bus' | 'train' | 'flight' | 'car';
@@ -40,6 +47,7 @@ const TransportSelector: React.FC<TransportSelectorProps> = ({
 }) => {
   const { getSuggestedTransport, getTransportAmenities } = useTripPlanning();
   const [suggestedTransport, setSuggestedTransport] = useState<any>(null);
+  const [showTransportDetails, setShowTransportDetails] = useState(false);
   
   useEffect(() => {
     if (destinationIds.length > 0) {
@@ -83,6 +91,9 @@ const TransportSelector: React.FC<TransportSelectorProps> = ({
       amenities: getTransportAmenities('car', numberOfDays > 1)
     }
   ];
+
+  // Filter transports by selected type
+  const selectedTransports = transports.filter(t => t.type === transportType);
 
   return (
     <>
@@ -143,6 +154,47 @@ const TransportSelector: React.FC<TransportSelectorProps> = ({
             </TooltipProvider>
           ))}
         </div>
+      </div>
+      
+      {/* Transport Type Details */}
+      <div className="mt-4">
+        <Button 
+          variant="outline" 
+          className="w-full flex justify-between items-center text-gray-600"
+          onClick={() => setShowTransportDetails(!showTransportDetails)}
+        >
+          <span>View {transportType} Types</span>
+          {showTransportDetails ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+        </Button>
+        
+        {showTransportDetails && (
+          <div className="mt-3 bg-gray-50 p-3 rounded-md">
+            <div className="grid grid-cols-1 gap-2">
+              {selectedTransports.length > 0 ? (
+                selectedTransports.map(transport => (
+                  <div 
+                    key={transport.id} 
+                    className="bg-white rounded-md p-3 border"
+                  >
+                    <div className="flex justify-between items-center">
+                      <h4 className="font-medium">{transport.name}</h4>
+                      <span className="text-sm">₹{transport.pricePerPerson}/person</span>
+                    </div>
+                    <div className="mt-2 flex flex-wrap gap-1">
+                      {transport.amenities.map((amenity, idx) => (
+                        <Badge key={idx} variant="outline" className="text-xs bg-gray-50">
+                          {amenity}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <p className="text-sm text-gray-500 p-3">No specific {transportType} types available.</p>
+              )}
+            </div>
+          </div>
+        )}
       </div>
       
       {/* Recommended Transport */}

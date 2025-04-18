@@ -2,19 +2,22 @@
 import React, { useEffect, useState } from 'react';
 import Layout from '../components/Layout';
 import TripPlanningForm from '../components/trip-planning/TripPlanningForm';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useDestinations } from '../context/DestinationContext';
 import { Destination } from '../types';
 import { Card, CardContent } from '@/components/ui/card';
 import DestinationSelector from '../components/trip-planning/DestinationSelector';
 import { Button } from '@/components/ui/button';
+import { toast } from '@/hooks/use-toast';
 
 const TripPlannerPage: React.FC = () => {
+  const navigate = useNavigate();
   const location = useLocation();
   const { destinationId } = location.state || {};
   const { destinations } = useDestinations();
   const [selectedDestinations, setSelectedDestinations] = useState<Destination[]>([]);
   const [isSelectingDestinations, setIsSelectingDestinations] = useState(!destinationId);
+  const [isLoadingDestinations, setIsLoadingDestinations] = useState(false);
 
   // If destinationId is provided, set it as the selected destination
   useEffect(() => {
@@ -39,6 +42,14 @@ const TripPlannerPage: React.FC = () => {
   };
 
   const handleProceedToPlanning = () => {
+    if (selectedDestinations.length === 0) {
+      toast({
+        title: "No destinations selected",
+        description: "Please select at least one destination to proceed.",
+        variant: "destructive"
+      });
+      return;
+    }
     setIsSelectingDestinations(false);
   };
 
@@ -63,34 +74,50 @@ const TripPlannerPage: React.FC = () => {
                   </div>
                 )}
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
-                  {destinations.map(destination => (
-                    <div
-                      key={destination.id}
-                      className={`border rounded-lg overflow-hidden cursor-pointer transition-colors ${
-                        selectedDestinations.some(dest => dest.id === destination.id)
-                          ? "border-primary bg-primary/5"
-                          : "border-gray-200 hover:border-gray-300"
-                      }`}
-                      onClick={() => handleDestinationToggle(destination)}
-                    >
-                      <div className="aspect-w-16 aspect-h-9">
-                        <img
-                          src={destination.image}
-                          alt={destination.name}
-                          className="w-full h-48 object-cover"
-                        />
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-6">
+                  {isLoadingDestinations ? (
+                    <p>Loading destinations...</p>
+                  ) : destinations.length > 0 ? (
+                    destinations.map(destination => (
+                      <div
+                        key={destination.id}
+                        className={`border rounded-lg overflow-hidden cursor-pointer transition-colors ${
+                          selectedDestinations.some(dest => dest.id === destination.id)
+                            ? "border-primary bg-primary/5"
+                            : "border-gray-200 hover:border-gray-300"
+                        }`}
+                        onClick={() => handleDestinationToggle(destination)}
+                      >
+                        <div className="aspect-w-16 aspect-h-9 relative">
+                          <img
+                            src={destination.image}
+                            alt={destination.name}
+                            className="w-full h-48 object-cover"
+                            onError={(e) => {
+                              // Fallback for image loading errors
+                              e.currentTarget.src = 'https://placehold.co/300x200/e2e8f0/64748b?text=Image+Not+Found';
+                            }}
+                          />
+                        </div>
+                        <div className="p-4">
+                          <h3 className="font-medium">{destination.name}</h3>
+                          <p className="text-sm text-gray-500">{destination.city}, {destination.state}</p>
+                        </div>
                       </div>
-                      <div className="p-4">
-                        <h3 className="font-medium">{destination.name}</h3>
-                        <p className="text-sm text-gray-500">{destination.city}, {destination.state}</p>
-                      </div>
-                    </div>
-                  ))}
+                    ))
+                  ) : (
+                    <p>No destinations available. Please check back later.</p>
+                  )}
                 </div>
               </div>
               
-              <div className="flex justify-end mt-4">
+              <div className="flex justify-end gap-3 mt-4">
+                <Button 
+                  variant="outline" 
+                  onClick={() => navigate('/destinations')}
+                >
+                  Browse More Destinations
+                </Button>
                 <Button
                   onClick={handleProceedToPlanning}
                   disabled={selectedDestinations.length === 0}
@@ -101,7 +128,7 @@ const TripPlannerPage: React.FC = () => {
             </CardContent>
           </Card>
         ) : (
-          <div className="bg-white rounded-lg shadow-md p-6">
+          <div className="bg-white rounded-lg shadow-md">
             <TripPlanningForm 
               selectedDestinations={selectedDestinations} 
               onBackToSelection={() => setIsSelectingDestinations(true)}
