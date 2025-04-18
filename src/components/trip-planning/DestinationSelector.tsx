@@ -27,6 +27,10 @@ const DestinationSelector: React.FC<DestinationSelectorProps> = ({
                 src={destination.image} 
                 alt={destination.name}
                 className="h-full w-full object-cover"
+                onError={(e) => {
+                  // Fallback for image loading errors
+                  e.currentTarget.src = 'https://placehold.co/300x200/e2e8f0/64748b?text=Image+Not+Found';
+                }}
               />
             </div>
             <span className="px-2 font-medium text-sm">{destination.name}</span>

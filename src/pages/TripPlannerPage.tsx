@@ -53,6 +53,9 @@ const TripPlannerPage: React.FC = () => {
     setIsSelectingDestinations(false);
   };
 
+  // Get all available destinations
+  const availableDestinations = destinations.slice(0, 20); // Show up to 20 destinations
+
   return (
     <Layout>
       <div className="container mx-auto px-4 py-8">
@@ -77,8 +80,8 @@ const TripPlannerPage: React.FC = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-6">
                   {isLoadingDestinations ? (
                     <p>Loading destinations...</p>
-                  ) : destinations.length > 0 ? (
-                    destinations.map(destination => (
+                  ) : availableDestinations.length > 0 ? (
+                    availableDestinations.map(destination => (
                       <div
                         key={destination.id}
                         className={`border rounded-lg overflow-hidden cursor-pointer transition-colors ${

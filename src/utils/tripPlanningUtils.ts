@@ -1,4 +1,3 @@
-
 export const getTransportAmenities = (type: string, isOvernight: boolean) => {
   const base = {
     'bus': ['Air Conditioning', 'Comfortable Seats', 'Onboard Entertainment'],
@@ -85,93 +84,173 @@ export const getOptimalTransportForDistance = (distance: number): 'bus' | 'train
 };
 
 export const calculateTransportCost = (distance: number, transportType: string, isPremium: boolean = false) => {
-  const rates: Record<string, number> = {
-    'bus': 2.5,
-    'train': 3.5,
-    'flight': 5,
-    'car': 12
-  };
+  // Base cost calculations based on transport type
+  let baseCost = 0;
   
-  const baseRate = rates[transportType] || 5;
-  const cost = distance * baseRate;
-  
-  if (transportType === 'flight') {
-    // Base fare + distance-based fare
-    return 2500 + (cost * 0.8);
+  switch(transportType) {
+    case 'bus':
+      // Base fare + per km cost
+      baseCost = 300 + (distance * 2.5);
+      break;
+    case 'train':
+      // Base fare + per km cost (higher than bus)
+      baseCost = 500 + (distance * 3.5);
+      break;
+    case 'flight':
+      // High base fare + per km cost (lower per km than others due to high base)
+      baseCost = 2500 + (distance * 5);
+      break;
+    case 'car':
+      // Higher per km cost (includes fuel, depreciation, driver)
+      baseCost = 1000 + (distance * 12);
+      break;
+    default:
+      baseCost = distance * 5; // Default calculation
   }
   
-  // Premium discount
-  return isPremium ? cost * 0.9 : cost; // 10% discount for premium users
+  // Calculate travel time to determine if overnight amenities are needed
+  const travelTimeHours = distance / getSpeedForTransport(transportType);
+  const isOvernight = travelTimeHours > 8;
+  
+  // Add costs for overnight travel if needed
+  if (isOvernight) {
+    switch(transportType) {
+      case 'bus':
+        baseCost += 500; // Sleeper bus costs more
+        break;
+      case 'train':
+        baseCost += 800; // Sleeper cabin costs
+        break;
+      case 'flight':
+        baseCost += 1200; // Night flight premium
+        break;
+      case 'car':
+        baseCost += 2000; // Driver change and overnight stays
+        break;
+    }
+  }
+  
+  // Adjustment for transport type quality levels
+  const qualityMultiplier = {
+    'bus': { basic: 0.8, standard: 1, premium: 1.3 },
+    'train': { basic: 0.8, standard: 1, premium: 1.5 },
+    'flight': { basic: 0.9, standard: 1, premium: 2.5 },
+    'car': { basic: 0.7, standard: 1, premium: 1.8 },
+  };
+  
+  // Get the standard quality multiplier for the transport type
+  const multiplier = qualityMultiplier[transportType as keyof typeof qualityMultiplier]?.standard || 1;
+  baseCost *= multiplier;
+  
+  // Premium discount (10% off for premium users)
+  if (isPremium) {
+    baseCost *= 0.9;
+  }
+  
+  return baseCost;
 };
 
+function getSpeedForTransport(transportType: string): number {
+  switch(transportType) {
+    case 'bus': return 45; // km/h
+    case 'train': return 60; // km/h
+    case 'flight': return 500; // km/h
+    case 'car': return 50; // km/h
+    default: return 50; // default speed
+  }
+}
+
 // Generate detailed itinerary with activities
-export const generateDetailedSchedule = (destinationType: string, dayType: 'arrival' | 'full' | 'departure') => {
-  const activities: Record<string, Array<{time: string, activity: string, notes?: string}>> = {
-    'beach': [
-      {time: '09:00', activity: 'Breakfast at beachside cafe', notes: 'Try local seafood specialties'},
-      {time: '10:30', activity: 'Beach relaxation time', notes: 'Sunbathing and swimming'},
-      {time: '13:00', activity: 'Lunch at beach shack'},
-      {time: '14:30', activity: 'Water sports activities', notes: 'Parasailing, jet ski available'},
-      {time: '16:30', activity: 'Beach volleyball'},
-      {time: '18:00', activity: 'Sunset walk on the beach'},
-      {time: '19:30', activity: 'Seafood dinner', notes: 'Fresh catch of the day'}
-    ],
-    'mountain': [
-      {time: '07:00', activity: 'Early breakfast'},
-      {time: '08:30', activity: 'Hiking expedition', notes: 'Moderate difficulty trail'},
-      {time: '12:30', activity: 'Picnic lunch at viewpoint'},
-      {time: '14:00', activity: 'Visit local handicraft village'},
-      {time: '16:00', activity: 'Tea at mountain cafe'},
-      {time: '17:30', activity: 'Photography at sunset point'},
-      {time: '19:00', activity: 'Traditional dinner', notes: 'Local mountain cuisine'}
-    ],
-    'city': [
-      {time: '08:30', activity: 'Breakfast at city cafe'},
-      {time: '10:00', activity: 'City sightseeing tour', notes: 'Historical monuments and landmarks'},
-      {time: '13:00', activity: 'Lunch at popular local restaurant'},
-      {time: '14:30', activity: 'Shopping at local markets'},
-      {time: '16:30', activity: 'Visit to museum/art gallery'},
-      {time: '18:30', activity: 'Evening cultural show'},
-      {time: '20:00', activity: 'Dinner at fine dining restaurant'}
-    ],
-    'historic': [
-      {time: '08:00', activity: 'Breakfast at hotel'},
-      {time: '09:30', activity: 'Guided tour of historical sites', notes: 'Ancient architecture exploration'},
-      {time: '12:30', activity: 'Traditional lunch'},
-      {time: '14:00', activity: 'Visit to local museum'},
-      {time: '16:00', activity: 'Historical walking tour'},
-      {time: '17:30', activity: 'Visit to heritage market'},
-      {time: '19:30', activity: 'Dinner at heritage restaurant', notes: 'Traditional recipes'}
-    ],
-    'wildlife': [
-      {time: '06:00', activity: 'Early morning safari', notes: 'Best time for wildlife spotting'},
-      {time: '09:30', activity: 'Breakfast at jungle lodge'},
-      {time: '11:00', activity: 'Visit to conservation center'},
-      {time: '13:00', activity: 'Lunch at jungle retreat'},
-      {time: '15:30', activity: 'Evening safari/nature walk'},
-      {time: '18:00', activity: 'Birdwatching session'},
-      {time: '19:30', activity: 'Dinner and wildlife documentary'}
-    ]
+export const generateDetailedSchedule = (destinationType: string, dayType: 'arrival' | 'full' | 'departure', travelStyle: 'base-hotel' | 'mobile' = 'mobile') => {
+  // Base schedule templates based on destination type and day type
+  const scheduleTemplates = {
+    'arrival': {
+      'base-hotel': [
+        {time: '09:00', activity: 'Check-in at base hotel', notes: 'Drop luggage, freshen up'},
+        {time: '11:00', activity: 'Local orientation and area exploration'},
+        {time: '13:00', activity: 'Lunch at nearby restaurant'},
+        {time: '15:00', activity: 'Brief visit to closest attraction'},
+        {time: '18:00', activity: 'Return to hotel and relax'},
+        {time: '20:00', activity: 'Dinner at hotel or nearby restaurant'}
+      ],
+      'mobile': [
+        {time: '10:00', activity: 'Arrive at destination'},
+        {time: '11:00', activity: 'Local orientation and area exploration'},
+        {time: '13:00', activity: 'Lunch at popular local spot'},
+        {time: '15:00', activity: 'Visit first attraction'},
+        {time: '17:00', activity: 'Check-in at hotel', notes: 'Freshen up and relax'},
+        {time: '20:00', activity: 'Dinner and local experiences'}
+      ]
+    },
+    'departure': {
+      'base-hotel': [
+        {time: '07:00', activity: 'Breakfast at hotel'},
+        {time: '08:30', activity: 'Check-out and luggage storage'},
+        {time: '09:30', activity: 'Last-minute shopping or sightseeing'},
+        {time: '12:00', activity: 'Lunch at favorite spot'},
+        {time: '14:00', activity: 'Departure preparation'},
+        {time: '16:00', activity: 'Depart for next destination or home'}
+      ],
+      'mobile': [
+        {time: '07:00', activity: 'Early breakfast'},
+        {time: '08:30', activity: 'Check-out from hotel'},
+        {time: '09:30', activity: 'Brief visit to missed attractions'},
+        {time: '12:00', activity: 'Final meal at destination'},
+        {time: '14:00', activity: 'Departure preparation'},
+        {time: '16:00', activity: 'Depart for next destination'}
+      ]
+    },
+    'full': {
+      'any': [
+        {time: '08:00', activity: 'Breakfast'},
+        {time: '09:30', activity: 'Morning activity/sightseeing'},
+        {time: '12:30', activity: 'Lunch'},
+        {time: '14:00', activity: 'Afternoon activity/sightseeing'},
+        {time: '17:00', activity: 'Free time/relaxation'},
+        {time: '19:30', activity: 'Dinner and evening activities'}
+      ]
+    }
   };
   
-  // Default to city if type not found
-  const scheduleTemplate = activities[destinationType] || activities['city'];
-  
-  if (dayType === 'arrival') {
-    // Return afternoon and evening activities only
-    return scheduleTemplate.filter(item => {
-      const hour = parseInt(item.time.split(':')[0]);
-      return hour >= 14;
-    });
-  } 
-  else if (dayType === 'departure') {
-    // Return morning and early afternoon activities only
-    return scheduleTemplate.filter(item => {
-      const hour = parseInt(item.time.split(':')[0]);
-      return hour < 14;
-    });
+  // Get the base schedule based on day type and travel style
+  let baseSchedule;
+  if (dayType === 'full') {
+    baseSchedule = scheduleTemplates.full.any;
+  } else {
+    baseSchedule = scheduleTemplates[dayType][travelStyle] || scheduleTemplates[dayType].mobile;
   }
   
-  // Return full day schedule
-  return scheduleTemplate;
+  // Customize activities based on destination type
+  const customizedSchedule = baseSchedule.map(item => {
+    // Keep the time slot the same
+    const newItem = { ...item };
+    
+    // Customize activities based on destination type for specific times
+    switch (destinationType) {
+      case 'beach':
+        if (item.time === '09:30') newItem.activity = 'Beach walk and swimming';
+        if (item.time === '14:00') newItem.activity = 'Water sports or sunbathing';
+        if (item.time === '19:30') newItem.activity = 'Seafood dinner at beachside restaurant';
+        break;
+      case 'mountain':
+        if (item.time === '09:30') newItem.activity = 'Hiking on scenic trails';
+        if (item.time === '14:00') newItem.activity = 'Visit to viewpoint or nature walk';
+        if (item.time === '19:30') newItem.activity = 'Dinner at mountain lodge';
+        break;
+      case 'historical':
+        if (item.time === '09:30') newItem.activity = 'Visit to historical monuments';
+        if (item.time === '14:00') newItem.activity = 'Guided tour of heritage sites';
+        if (item.time === '19:30') newItem.activity = 'Dinner at traditional restaurant';
+        break;
+      case 'city':
+        if (item.time === '09:30') newItem.activity = 'City sightseeing tour';
+        if (item.time === '14:00') newItem.activity = 'Shopping and local market exploration';
+        if (item.time === '19:30') newItem.activity = 'Dinner and nightlife experience';
+        break;
+    }
+    
+    return newItem;
+  });
+  
+  return customizedSchedule;
 };
