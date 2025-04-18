@@ -8,6 +8,7 @@ import { Destination } from '../../types';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/hooks/use-toast';
+import { ChevronLeft } from 'lucide-react';
 import DestinationSelector from './DestinationSelector';
 import TripDetailsInput from './TripDetailsInput';
 import TransportSelector from './TransportSelector';
@@ -19,9 +20,10 @@ import TripCostEstimate from './TripCostEstimate';
 
 interface TripPlanningFormProps {
   selectedDestinations: Destination[];
+  onBackToSelection?: () => void;
 }
 
-const TripPlanningForm: React.FC<TripPlanningFormProps> = ({ selectedDestinations: initialDestinations }) => {
+const TripPlanningForm: React.FC<TripPlanningFormProps> = ({ selectedDestinations: initialDestinations, onBackToSelection }) => {
   const navigate = useNavigate();
   const { currentUser } = useAuth();
   const { saveTripPlan } = useTripPlanning();
@@ -104,7 +106,7 @@ const TripPlanningForm: React.FC<TripPlanningFormProps> = ({ selectedDestination
     }
   };
 
-  if (selectedDestinations.length === 0) {
+  if (selectedDestinations.length === 0 && !onBackToSelection) {
     return (
       <Card>
         <CardContent className="p-6">
@@ -121,6 +123,17 @@ const TripPlanningForm: React.FC<TripPlanningFormProps> = ({ selectedDestination
   return (
     <Card className="border-gray-200">
       <CardContent className="p-6">
+        {onBackToSelection && (
+          <Button 
+            variant="ghost" 
+            onClick={onBackToSelection} 
+            className="mb-4 -ml-2 text-gray-500 hover:text-gray-900"
+          >
+            <ChevronLeft className="mr-1 h-4 w-4" />
+            Back to Destination Selection
+          </Button>
+        )}
+        
         <h2 className="text-2xl font-semibold mb-6">Plan Your Trip</h2>
         
         <div className="grid md:grid-cols-2 gap-8">
