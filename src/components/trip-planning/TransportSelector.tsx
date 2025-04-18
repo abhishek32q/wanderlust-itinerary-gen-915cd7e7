@@ -3,8 +3,14 @@ import React, { useState, useEffect } from 'react';
 import { Separator } from '@/components/ui/separator';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { Car, Bus, Train, Plane, Clock } from 'lucide-react';
+import { Car, Bus, Train, Plane, Clock, Info } from 'lucide-react';
 import { useTripPlanning } from '../../context/trip-planning/TripPlanningContext';
+import { 
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface TransportSelectorProps {
   transportType: 'bus' | 'train' | 'flight' | 'car';
@@ -14,6 +20,15 @@ interface TransportSelectorProps {
   isPremium?: boolean;
 }
 
+interface TransportOption {
+  type: 'bus' | 'train' | 'flight' | 'car';
+  label: string;
+  description: string;
+  icon: React.ReactNode;
+  amenities: string[];
+  premium?: boolean;
+}
+
 const TransportSelector: React.FC<TransportSelectorProps> = ({
   transportType,
   setTransportType,
@@ -21,7 +36,7 @@ const TransportSelector: React.FC<TransportSelectorProps> = ({
   numberOfDays,
   isPremium
 }) => {
-  const { getSuggestedTransport } = useTripPlanning();
+  const { getSuggestedTransport, getTransportAmenities } = useTripPlanning();
   const [suggestedTransport, setSuggestedTransport] = useState<any>(null);
   
   useEffect(() => {
@@ -35,70 +50,95 @@ const TransportSelector: React.FC<TransportSelectorProps> = ({
     }
   }, [destinationIds, numberOfDays, isPremium, getSuggestedTransport]);
 
-  const getTransportIcon = (type: string) => {
-    switch (type) {
-      case 'bus': return <Bus className="h-6 w-6 mb-1" />;
-      case 'train': return <Train className="h-6 w-6 mb-1" />;
-      case 'flight': return <Plane className="h-6 w-6 mb-1" />;
-      case 'car': return <Car className="h-6 w-6 mb-1" />;
-      default: return <Car className="h-6 w-6 mb-1" />;
+  const transportOptions: TransportOption[] = [
+    {
+      type: 'bus',
+      label: 'Bus',
+      description: 'Affordable',
+      icon: <Bus className="h-6 w-6 mb-1" />,
+      amenities: getTransportAmenities('bus', numberOfDays > 1)
+    },
+    {
+      type: 'train',
+      label: 'Train',
+      description: 'Comfortable',
+      icon: <Train className="h-6 w-6 mb-1" />,
+      amenities: getTransportAmenities('train', numberOfDays > 1)
+    },
+    {
+      type: 'flight',
+      label: 'Flight',
+      description: 'Fast',
+      icon: <Plane className="h-6 w-6 mb-1" />,
+      amenities: getTransportAmenities('flight', numberOfDays > 1),
+      premium: true
+    },
+    {
+      type: 'car',
+      label: 'Car',
+      description: 'Flexible',
+      icon: <Car className="h-6 w-6 mb-1" />,
+      amenities: getTransportAmenities('car', numberOfDays > 1)
     }
-  };
+  ];
 
   return (
     <>
-      <Separator />
+      <Separator className="my-4" />
       <div>
-        <Label>Transportation</Label>
+        <div className="flex justify-between items-center mb-3">
+          <Label className="text-base">Transportation</Label>
+          {suggestedTransport && (
+            <span className="text-sm text-primary flex items-center">
+              <Clock className="h-4 w-4 mr-1" />
+              Travel Time: ~{Math.round(suggestedTransport.totalTravelTimeHours)} hrs
+            </span>
+          )}
+        </div>
+        
         <div className="grid grid-cols-4 gap-2 mt-2">
-          <Button
-            variant={transportType === 'bus' ? 'default' : 'outline'}
-            onClick={() => setTransportType('bus')}
-            className="flex flex-col h-auto py-3"
-          >
-            <Bus className="h-6 w-6 mb-1" />
-            <span>Bus</span>
-            <span className="text-xs text-gray-500">Affordable</span>
-          </Button>
-          
-          <Button
-            variant={transportType === 'train' ? 'default' : 'outline'}
-            onClick={() => setTransportType('train')}
-            className="flex flex-col h-auto py-3"
-          >
-            <Train className="h-6 w-6 mb-1" />
-            <span>Train</span>
-            <span className="text-xs text-gray-500">Comfortable</span>
-          </Button>
-          
-          <Button
-            variant={transportType === 'flight' ? 'default' : 'outline'}
-            onClick={() => setTransportType('flight')}
-            className="flex flex-col h-auto py-3"
-            disabled={!isPremium}
-          >
-            <Plane className="h-6 w-6 mb-1" />
-            <span>Flight</span>
-            {!isPremium && (
-              <span className="text-xs text-amber-500">Premium</span>
-            )}
-          </Button>
-          
-          <Button
-            variant={transportType === 'car' ? 'default' : 'outline'}
-            onClick={() => setTransportType('car')}
-            className="flex flex-col h-auto py-3"
-          >
-            <Car className="h-6 w-6 mb-1" />
-            <span>Car</span>
-            <span className="text-xs text-gray-500">Private</span>
-          </Button>
+          {transportOptions.map((option) => (
+            <TooltipProvider key={option.type}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant={transportType === option.type ? 'default' : 'outline'}
+                    onClick={() => !option.premium || isPremium ? setTransportType(option.type) : null}
+                    className="flex flex-col h-auto py-3"
+                    disabled={option.premium && !isPremium}
+                  >
+                    {option.icon}
+                    <span>{option.label}</span>
+                    <span className={`text-xs ${option.premium && !isPremium ? 'text-amber-500' : 'text-gray-500'}`}>
+                      {option.premium && !isPremium ? 'Premium' : option.description}
+                    </span>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent className="w-64 p-3">
+                  <p className="font-medium mb-2">{option.label} Transportation</p>
+                  <ul className="text-sm space-y-1">
+                    {option.amenities.map((amenity, index) => (
+                      <li key={index} className="flex items-start">
+                        <span className="mr-2">•</span>
+                        <span>{amenity}</span>
+                      </li>
+                    ))}
+                    {option.premium && !isPremium && (
+                      <li className="text-amber-600 mt-2 pt-1 border-t border-amber-200">
+                        Upgrade to Premium to unlock this option
+                      </li>
+                    )}
+                  </ul>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          ))}
         </div>
       </div>
       
       {/* Recommended Transport */}
       {suggestedTransport && (
-        <div className="bg-gray-50 p-3 rounded-lg">
+        <div className="bg-gray-50 p-3 rounded-lg mt-3">
           <p className="text-sm flex items-center gap-1 text-gray-600 mb-2">
             <span className="inline-block w-2 h-2 rounded-full bg-green-500"></span>
             Recommended Transport:
@@ -106,15 +146,29 @@ const TransportSelector: React.FC<TransportSelectorProps> = ({
           
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              {getTransportIcon(suggestedTransport.recommendedType)}
+              {transportOptions.find(o => o.type === suggestedTransport.recommendedType)?.icon || 
+               <Car className="h-5 w-5" />}
               <span className="font-medium capitalize">{suggestedTransport.recommendedType}</span>
             </div>
             
-            <p className="text-sm text-gray-600">{suggestedTransport.reasoning}</p>
+            <div className="flex items-center">
+              <p className="text-sm text-gray-600 mr-2">{suggestedTransport.reasoning}</p>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger>
+                    <Info className="h-4 w-4 text-gray-500" />
+                  </TooltipTrigger>
+                  <TooltipContent className="w-64">
+                    <p className="mb-2">Total distance: {Math.round(suggestedTransport.totalDistanceKm)} km</p>
+                    <p>Time for sightseeing: ~{Math.round(suggestedTransport.timeForSightseeing)} hrs</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
           </div>
           
           {!suggestedTransport.isRealistic && (
-            <p className="text-sm text-red-500 mt-2">
+            <p className="text-sm text-red-500 mt-2 flex items-center">
               <Clock className="h-4 w-4 inline mr-1" />
               This trip may be rushed. Consider adding more days.
             </p>
