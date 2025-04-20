@@ -104,9 +104,9 @@ const TripPlanningForm: React.FC<TripPlanningFormProps> = ({
         description: "Your trip has been successfully planned.",
       });
       
-      // Use a little timeout to ensure the toast is shown before navigation
+      // Redirect to bookings page to view the trip details
       setTimeout(() => {
-        navigate(`/bookings/${tripId}`);
+        navigate(`/bookings-history`);
       }, 1000);
     } catch (error) {
       console.error("Error creating trip plan:", error);

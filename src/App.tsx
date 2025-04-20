@@ -25,6 +25,8 @@ import PrivacyPage from './pages/PrivacyPage';
 import TermsPage from './pages/TermsPage';
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
+import BookingsHistoryPage from './pages/BookingsHistoryPage';
+import PremiumPage from './pages/PremiumPage';
 
 // Initialize QueryClient
 const queryClient = new QueryClient({
@@ -52,6 +54,7 @@ function App() {
                     <Route path="/bookings/:id" element={<BookingDetails />} />
                     <Route path="/trip-planner" element={<TripPlannerPage />} />
                     <Route path="/bookings" element={<BookingDetails />} />
+                    <Route path="/bookings-history" element={<BookingsHistoryPage />} />
                     <Route path="/profile" element={<ProfilePage />} />
                     <Route path="/about" element={<AboutPage />} />
                     <Route path="/contact" element={<ContactPage />} />
@@ -59,6 +62,7 @@ function App() {
                     <Route path="/terms" element={<TermsPage />} />
                     <Route path="/login" element={<LoginPage />} />
                     <Route path="/signup" element={<SignupPage />} />
+                    <Route path="/premium" element={<PremiumPage />} />
                     <Route path="*" element={<NotFound />} />
                   </Routes>
                   <LiveChatButton />

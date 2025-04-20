@@ -22,7 +22,7 @@ const DestinationSelector: React.FC<DestinationSelectorProps> = ({
             key={destination.id} 
             className="flex items-center bg-gray-50 border rounded-lg overflow-hidden pr-2"
           >
-            <div className="h-10 w-12 overflow-hidden">
+            <div className="h-12 w-16 overflow-hidden">
               <img 
                 src={destination.image} 
                 alt={destination.name}

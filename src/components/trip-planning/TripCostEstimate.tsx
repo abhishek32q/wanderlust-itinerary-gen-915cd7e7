@@ -1,9 +1,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { Separator } from '@/components/ui/separator';
-import { Destination, GuideType, TransportType } from '../../types';
+import { Destination, GuideType } from '../../types';
 import { useTripPlanning } from '../../context/trip-planning/TripPlanningContext';
-import { calculateTransportCost } from '../../utils/tripPlanningUtils';
 
 interface TripCostEstimateProps {
   destinationIds: string[];
@@ -147,7 +146,7 @@ const TripCostEstimate: React.FC<TripCostEstimateProps> = ({
       let transportCost = 0;
       
       // Find the selected transport details
-      const transportDetails = transports
+      const selectedTransport = transports
         .filter(t => t.type === transportType)
         .reduce((max, transport) => 
           transport.pricePerPerson > max.pricePerPerson ? transport : max, 

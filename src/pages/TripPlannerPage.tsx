@@ -53,8 +53,8 @@ const TripPlannerPage: React.FC = () => {
     setIsSelectingDestinations(false);
   };
 
-  // Get all available destinations
-  const availableDestinations = destinations.slice(0, 20); // Show up to 20 destinations
+  // Get all available destinations (up to 20)
+  const availableDestinations = destinations.slice(0, 20);
 
   return (
     <Layout>
