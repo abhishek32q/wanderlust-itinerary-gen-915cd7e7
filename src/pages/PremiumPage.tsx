@@ -6,10 +6,12 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Check, Star, CreditCard } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { useToast } from "@/components/ui/use-toast";
 
 const PremiumPage: React.FC = () => {
   const navigate = useNavigate();
-  const { currentUser, updateUserStatus } = useAuth();
+  const { currentUser, updateUserProfile } = useAuth();
+  const { toast } = useToast();
   
   // Premium features list
   const premiumFeatures = [
@@ -48,13 +50,22 @@ const PremiumPage: React.FC = () => {
       // In a real app, this would integrate with a payment gateway
       // For now, we'll just simulate becoming a premium member
       if (currentUser) {
-        await updateUserStatus({ ...currentUser, isPremium: true });
+        await updateUserProfile({ isPremium: true });
+        toast({
+          title: "Premium membership activated",
+          description: "You now have access to all premium features!",
+        });
         navigate('/profile');
       } else {
         navigate('/login', { state: { returnPath: '/premium' } });
       }
     } catch (error) {
       console.error("Error upgrading to premium:", error);
+      toast({
+        title: "Error upgrading to premium",
+        description: "Please try again later",
+        variant: "destructive"
+      });
     }
   };
 

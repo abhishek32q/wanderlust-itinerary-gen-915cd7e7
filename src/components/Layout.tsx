@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { NavLink, Link, useLocation } from 'react-router-dom';
 import { Moon, Sun, MapPin, Star, Navigation, User } from 'lucide-react';
@@ -97,17 +96,9 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                     variant="ghost"
                     className="rounded-full h-9 w-9 p-0 focus-visible:ring-0"
                   >
-                    {currentUser.photoURL ? (
-                      <img
-                        src={currentUser.photoURL}
-                        alt={currentUser.displayName || 'User'}
-                        className="h-9 w-9 rounded-full"
-                      />
-                    ) : (
-                      <div className="h-9 w-9 rounded-full bg-blue-100 flex items-center justify-center">
-                        <User className="h-5 w-5 text-blue-600" />
-                      </div>
-                    )}
+                    <div className="h-9 w-9 rounded-full bg-blue-100 flex items-center justify-center">
+                      <User className="h-5 w-5 text-blue-600" />
+                    </div>
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48">
