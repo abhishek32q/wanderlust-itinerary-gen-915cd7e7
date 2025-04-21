@@ -10,6 +10,7 @@ import { hotels } from '../../data/hotels';
 import { transports } from '../../data/transports';
 import { guides } from '../../data/guides';
 
+// Create the context with undefined as initial value
 const TripPlanningContext = createContext<TripPlanningContextType | undefined>(undefined);
 
 export const TripPlanningProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -78,19 +79,36 @@ export const TripPlanningProvider: React.FC<{ children: React.ReactNode }> = ({ 
       const newTripPlanId = `trip_${uuidv4()}`;
       const transportType = tripPlanData.transportType || 'car';
       
-      const optimalHotels = getOptimalHotels(tripPlanData.selectedDestinations);
+      let optimalHotels = [];
+      try {
+        optimalHotels = getOptimalHotels(tripPlanData.selectedDestinations);
+      } catch (err) {
+        console.error('Error getting optimal hotels:', err);
+        optimalHotels = [];
+      }
       
-      const itinerary = generateOptimalItinerary({
-        destinationIds: tripPlanData.selectedDestinations,
-        transportType,
-        numberOfDays: tripPlanData.numberOfDays,
-        startDate: new Date(tripPlanData.startDate),
-        travelStyle: tripPlanData.travelStyle,
-        isPremium: tripPlanData.isPremium
-      });
+      let itinerary = [];
+      try {
+        itinerary = generateOptimalItinerary({
+          destinationIds: tripPlanData.selectedDestinations,
+          transportType,
+          numberOfDays: tripPlanData.numberOfDays,
+          startDate: new Date(tripPlanData.startDate),
+          travelStyle: tripPlanData.travelStyle,
+          isPremium: tripPlanData.isPremium
+        });
+      } catch (err) {
+        console.error('Error generating itinerary:', err);
+        itinerary = [];
+      }
       
-      const avgProximityScore = optimalHotels.reduce((sum, hotel) => 
-        sum + hotel.location.proximityScore, 0) / optimalHotels.length;
+      let avgProximityScore = 0;
+      try {
+        avgProximityScore = optimalHotels.length > 0 ? 
+          optimalHotels.reduce((sum, hotel) => sum + hotel.location.proximityScore, 0) / optimalHotels.length : 0;
+      } catch (err) {
+        console.error('Error calculating proximity score:', err);
+      }
 
       const newTripPlan: TripPlan = {
         ...tripPlanData,
@@ -157,7 +175,12 @@ export const TripPlanningProvider: React.FC<{ children: React.ReactNode }> = ({ 
   };
 
   const getGuidesByDestination = (destId: string) => {
-    return guides.filter(g => g.destinationId === destId);
+    try {
+      return guides.filter(g => g.destinationId === destId);
+    } catch (error) {
+      console.error("Error fetching guides:", error);
+      return [];
+    }
   };
 
   return (

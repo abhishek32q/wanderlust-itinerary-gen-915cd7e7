@@ -4,6 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/hooks/use-toast';
+import { Loader2 } from 'lucide-react';
 
 interface TripPlanningSubmitProps {
   startDate?: Date;
@@ -63,16 +64,31 @@ const TripPlanningSubmit: React.FC<TripPlanningSubmitProps> = ({
             onClick={onCancel} 
             variant="outline"
             disabled={submitting}
+            className="flex items-center justify-center"
           >
-            Cancel
+            {submitting ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                Cancelling...
+              </>
+            ) : (
+              'Cancel'
+            )}
           </Button>
         )}
         <Button 
           onClick={handleSubmit} 
-          className={onCancel ? "" : "w-full"}
+          className={onCancel ? "flex items-center justify-center" : "w-full flex items-center justify-center"}
           disabled={submitting || !startDate || selectedDestinationIds.length === 0}
         >
-          {submitting ? 'Creating Plan...' : 'Create Trip Plan'}
+          {submitting ? (
+            <>
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              Creating Plan...
+            </>
+          ) : (
+            'Create Trip Plan'
+          )}
         </Button>
       </div>
       

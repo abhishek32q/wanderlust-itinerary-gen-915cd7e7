@@ -101,23 +101,27 @@ const TripPlanningFormContent: React.FC<TripPlanningFormContentProps> = ({
       
       {/* Right Column - Trip Summary */}
       <div className="space-y-6">
-        <TripFeasibilityCheck 
-          destinationIds={destinationIds}
-          transportType={transportType}
-          numberOfDays={numberOfDays}
-        />
+        {destinationIds.length > 0 && (
+          <TripFeasibilityCheck 
+            destinationIds={destinationIds}
+            transportType={transportType}
+            numberOfDays={numberOfDays}
+          />
+        )}
         
-        <TripCostEstimate 
-          destinationIds={destinationIds}
-          selectedDestinations={selectedDestinations}
-          transportType={transportType}
-          hotelType={hotelType}
-          travelStyle={travelStyle}
-          numberOfDays={numberOfDays}
-          numberOfPeople={numberOfPeople}
-          selectedGuideIds={selectedGuideIds}
-          isPremium={isPremium}
-        />
+        {startDate && destinationIds.length > 0 && (
+          <TripCostEstimate 
+            destinationIds={destinationIds}
+            selectedDestinations={selectedDestinations}
+            transportType={transportType}
+            hotelType={hotelType}
+            travelStyle={travelStyle}
+            numberOfDays={numberOfDays}
+            numberOfPeople={numberOfPeople}
+            selectedGuideIds={selectedGuideIds}
+            isPremium={isPremium}
+          />
+        )}
         
         <TripPlanningSubmit
           startDate={startDate}

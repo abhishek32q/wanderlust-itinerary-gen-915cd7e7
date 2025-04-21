@@ -49,7 +49,14 @@ const TripCostEstimate: React.FC<TripCostEstimateProps> = ({
 
   // Calculate total distance between destinations - memoized for performance
   const calculatedDistance = useMemo(() => {
-    if (selectedDestinations.length <= 1) return 0;
+    if (selectedDestinations.length <= 1) {
+      return {
+        totalDistance: 0,
+        breakdown: [],
+        travelTime: 0,
+        speed: 0
+      };
+    }
     
     let distance = 0;
     const breakdown: Array<{from: string; to: string; distance: number}> = [];
@@ -117,11 +124,13 @@ const TripCostEstimate: React.FC<TripCostEstimateProps> = ({
 
   // Set total distance and transport details when calculated
   useEffect(() => {
-    setTotalDistance(calculatedDistance.totalDistance);
-    setTransportDetails({
-      distanceBreakdown: calculatedDistance.breakdown,
-      totalTravelTime: calculatedDistance.travelTime
-    });
+    if (typeof calculatedDistance === 'object' && calculatedDistance !== null) {
+      setTotalDistance(calculatedDistance.totalDistance);
+      setTransportDetails({
+        distanceBreakdown: calculatedDistance.breakdown,
+        totalTravelTime: calculatedDistance.travelTime
+      });
+    }
   }, [calculatedDistance]);
 
   // Get available guides - memoized for performance
@@ -154,72 +163,92 @@ const TripCostEstimate: React.FC<TripCostEstimateProps> = ({
         // Get hotels based on travel style and number of destinations
         let hotelsList = [];
         
-        if (selectedDestinations.length > 1 && travelStyle === 'mobile') {
-          // Multiple destinations with changing hotels
-          hotelsList = getOptimalHotels(destinationIds) || [];
-        } else if (selectedDestinations.length > 1 && travelStyle === 'base-hotel') {
-          // Multiple destinations with base hotel - find most central
-          const centralHotel = getNearbyHotels(destinationIds[0], 1) || [];
-          hotelsList = centralHotel;
-        } else if (selectedDestinations.length === 1) {
-          // Single destination - just get hotels for that destination
-          const destHotels = getHotelsByDestination(destinationIds[0]) || [];
-          hotelsList = destHotels
-            .filter(hotel => hotel.type === hotelType)
-            .slice(0, 1);
+        try {
+          if (selectedDestinations.length > 1 && travelStyle === 'mobile') {
+            // Multiple destinations with changing hotels
+            hotelsList = getOptimalHotels(destinationIds) || [];
+          } else if (selectedDestinations.length > 1 && travelStyle === 'base-hotel') {
+            // Multiple destinations with base hotel - find most central
+            const centralHotel = getNearbyHotels(destinationIds[0], 1) || [];
+            hotelsList = centralHotel;
+          } else if (selectedDestinations.length === 1) {
+            // Single destination - just get hotels for that destination
+            const destHotels = getHotelsByDestination(destinationIds[0]) || [];
+            hotelsList = destHotels
+              .filter(hotel => hotel.type === hotelType)
+              .slice(0, 1);
+          }
+        } catch (error) {
+          console.error("Error getting hotels:", error);
+          hotelsList = [];
         }
         
         // Calculate transport cost based on distance and type
         let transportCost = 0;
         
-        // Find the selected transport details - safely handle undefined values
-        const availableTransports = transports.filter(t => t.type === transportType);
-        let selectedTransport = null;
-        
-        if (availableTransports.length > 0) {
-          selectedTransport = availableTransports.reduce((max, transport) => 
-            transport.pricePerPerson > max.pricePerPerson ? transport : max, 
-            availableTransports[0]
-          );
-        }
-        
-        if (totalDistance > 0) {
-          // Base cost per km based on transport type
-          const baseCostPerKm = {
-            'bus': 2.5,
-            'train': 3.5,
-            'flight': 5,
-            'car': 12
-          }[transportType] || 5;
+        try {
+          // Find the selected transport details - safely handle undefined values
+          const availableTransports = transports ? transports.filter(t => t.type === transportType) : [];
+          let selectedTransport = null;
           
-          // Calculate cost based on distance
-          transportCost = totalDistance * baseCostPerKm;
-          
-          if (transportType === 'flight') {
-            // For flights: base fare + distance-based fare
-            transportCost = 2500 + (transportCost * 0.8);
+          if (availableTransports.length > 0) {
+            selectedTransport = availableTransports.reduce((max, transport) => 
+              transport.pricePerPerson > max.pricePerPerson ? transport : max, 
+              availableTransports[0]
+            );
           }
           
-          // Premium discount (10%)
-          if (isPremium) {
-            transportCost *= 0.9;
+          if (totalDistance > 0) {
+            // Base cost per km based on transport type
+            const baseCostPerKm = {
+              'bus': 2.5,
+              'train': 3.5,
+              'flight': 5,
+              'car': 12
+            }[transportType] || 5;
+            
+            // Calculate cost based on distance
+            transportCost = totalDistance * baseCostPerKm;
+            
+            if (transportType === 'flight') {
+              // For flights: base fare + distance-based fare
+              transportCost = 2500 + (transportCost * 0.8);
+            }
+            
+            // Premium discount (10%)
+            if (isPremium) {
+              transportCost *= 0.9;
+            }
+            
+            // Multiply by number of people
+            transportCost *= numberOfPeople;
           }
-          
-          // Multiply by number of people
-          transportCost *= numberOfPeople;
+        } catch (error) {
+          console.error("Error calculating transport cost:", error);
+          transportCost = 5000 * numberOfPeople;
         }
         
         // Calculate hotels cost based on type and number of days
         let hotelsCost = 0;
-        if (hotelsList && hotelsList.length > 0) {
-          // Safely calculate hotel costs
-          const validHotels = hotelsList.filter(h => h && typeof h.pricePerPerson === 'number');
-          
-          if (validHotels.length > 0) {
-            const hotelCostPerDay = validHotels.reduce((sum, h) => sum + h.pricePerPerson, 0) / validHotels.length;
-            hotelsCost = hotelCostPerDay * numberOfDays * numberOfPeople;
+        try {
+          if (hotelsList && hotelsList.length > 0) {
+            // Safely calculate hotel costs
+            const validHotels = hotelsList.filter(h => h && typeof h.pricePerPerson === 'number');
+            
+            if (validHotels.length > 0) {
+              const hotelCostPerDay = validHotels.reduce((sum, h) => sum + h.pricePerPerson, 0) / validHotels.length;
+              hotelsCost = hotelCostPerDay * numberOfDays * numberOfPeople;
+            } else {
+              // Fallback costs if no valid hotels found
+              const fallbackCosts = {
+                'budget': 1500,
+                'standard': 3000,
+                'luxury': 8000
+              };
+              hotelsCost = (fallbackCosts[hotelType] || 3000) * numberOfDays * numberOfPeople;
+            }
           } else {
-            // Fallback costs if no valid hotels found
+            // Fallback if no hotels found
             const fallbackCosts = {
               'budget': 1500,
               'standard': 3000,
@@ -227,27 +256,40 @@ const TripCostEstimate: React.FC<TripCostEstimateProps> = ({
             };
             hotelsCost = (fallbackCosts[hotelType] || 3000) * numberOfDays * numberOfPeople;
           }
+        } catch (error) {
+          console.error("Error calculating hotel costs:", error);
+          hotelsCost = 3000 * numberOfDays * numberOfPeople;
         }
         
         // Calculate destinations cost (entry tickets)
         let destinationsCost = 0;
-        for (const dest of selectedDestinations) {
-          if (typeof dest.price === 'number') {
-            destinationsCost += dest.price;
-          } else if (dest.price && typeof dest.price.adult === 'number') {
-            destinationsCost += dest.price.adult;
-          } else {
-            // Fallback price if not defined
-            destinationsCost += 500;
+        try {
+          for (const dest of selectedDestinations) {
+            if (typeof dest.price === 'number') {
+              destinationsCost += dest.price;
+            } else if (dest.price && typeof dest.price.adult === 'number') {
+              destinationsCost += dest.price.adult;
+            } else {
+              // Fallback price if not defined
+              destinationsCost += 500;
+            }
           }
+          destinationsCost *= numberOfPeople;
+        } catch (error) {
+          console.error("Error calculating destination costs:", error);
+          destinationsCost = 500 * selectedDestinations.length * numberOfPeople;
         }
-        destinationsCost *= numberOfPeople;
         
         // Calculate guides cost
         let guidesCost = 0;
-        if (selectedGuideIds.length > 0 && availableGuides.length > 0) {
-          const selectedGuides = availableGuides.filter(g => selectedGuideIds.includes(g.id));
-          guidesCost = selectedGuides.reduce((sum, g) => sum + (g.pricePerDay || 2000), 0) * numberOfDays;
+        try {
+          if (selectedGuideIds.length > 0 && availableGuides.length > 0) {
+            const selectedGuides = availableGuides.filter(g => selectedGuideIds.includes(g.id));
+            guidesCost = selectedGuides.reduce((sum, g) => sum + (g.pricePerDay || 2000), 0) * numberOfDays;
+          }
+        } catch (error) {
+          console.error("Error calculating guide costs:", error);
+          guidesCost = selectedGuideIds.length > 0 ? 2000 * numberOfDays : 0;
         }
         
         // Set total trip cost
@@ -265,7 +307,7 @@ const TripCostEstimate: React.FC<TripCostEstimateProps> = ({
         console.error("Error calculating trip cost:", error);
         toast({
           title: "Calculation Error",
-          description: "There was an error calculating the trip cost. Please try again.",
+          description: "There was an error calculating the trip cost. Using estimated values.",
           variant: "destructive"
         });
         
