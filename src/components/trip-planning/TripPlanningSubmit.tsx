@@ -10,13 +10,15 @@ interface TripPlanningSubmitProps {
   selectedDestinationIds: string[];
   submitting: boolean;
   onSubmit: () => void;
+  onCancel?: () => void;
 }
 
 const TripPlanningSubmit: React.FC<TripPlanningSubmitProps> = ({
   startDate,
   selectedDestinationIds,
   submitting,
-  onSubmit
+  onSubmit,
+  onCancel
 }) => {
   const navigate = useNavigate();
   const { currentUser } = useAuth();
@@ -54,14 +56,26 @@ const TripPlanningSubmit: React.FC<TripPlanningSubmitProps> = ({
   };
 
   return (
-    <div className="pt-4">
-      <Button 
-        onClick={handleSubmit} 
-        className="w-full"
-        disabled={submitting || !startDate || selectedDestinationIds.length === 0}
-      >
-        {submitting ? 'Creating Plan...' : 'Create Trip Plan'}
-      </Button>
+    <div className="pt-4 space-y-3">
+      <div className="grid grid-cols-2 gap-3">
+        {onCancel && (
+          <Button 
+            onClick={onCancel} 
+            variant="outline"
+            disabled={submitting}
+          >
+            Cancel
+          </Button>
+        )}
+        <Button 
+          onClick={handleSubmit} 
+          className={onCancel ? "" : "w-full"}
+          disabled={submitting || !startDate || selectedDestinationIds.length === 0}
+        >
+          {submitting ? 'Creating Plan...' : 'Create Trip Plan'}
+        </Button>
+      </div>
+      
       {!currentUser && (
         <p className="text-sm text-gray-500 text-center mt-2">
           Login required to save trip plans

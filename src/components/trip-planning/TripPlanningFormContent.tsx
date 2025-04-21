@@ -30,6 +30,7 @@ interface TripPlanningFormContentProps {
   setSelectedGuideIds: (ids: string[]) => void;
   submitting: boolean;
   onSubmitPlan: () => void;
+  onCancelPlan?: () => void;
   isPremium?: boolean;
 }
 
@@ -52,6 +53,7 @@ const TripPlanningFormContent: React.FC<TripPlanningFormContentProps> = ({
   setSelectedGuideIds,
   submitting,
   onSubmitPlan,
+  onCancelPlan,
   isPremium
 }) => {
   const destinationIds = selectedDestinations.map(destination => destination.id);
@@ -122,6 +124,7 @@ const TripPlanningFormContent: React.FC<TripPlanningFormContentProps> = ({
           selectedDestinationIds={destinationIds}
           submitting={submitting}
           onSubmit={onSubmitPlan}
+          onCancel={onCancelPlan}
         />
       </div>
     </div>

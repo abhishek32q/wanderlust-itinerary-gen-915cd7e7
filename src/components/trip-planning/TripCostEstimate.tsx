@@ -1,8 +1,10 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Separator } from '@/components/ui/separator';
 import { Destination, GuideType } from '../../types';
 import { useTripPlanning } from '../../context/trip-planning/TripPlanningContext';
+import { toast } from '@/hooks/use-toast';
+import { Loader2 } from 'lucide-react';
 
 interface TripCostEstimateProps {
   destinationIds: string[];
@@ -38,193 +40,258 @@ const TripCostEstimate: React.FC<TripCostEstimateProps> = ({
   
   const [tripCost, setTripCost] = useState<any>(null);
   const [totalDistance, setTotalDistance] = useState(0);
+  const [isCalculating, setIsCalculating] = useState(false);
   const [availableGuides, setAvailableGuides] = useState<GuideType[]>([]);
   const [transportDetails, setTransportDetails] = useState<{
     distanceBreakdown: Array<{from: string; to: string; distance: number}>;
     totalTravelTime: number;
   }>({ distanceBreakdown: [], totalTravelTime: 0 });
 
-  // Calculate total distance between destinations
-  useEffect(() => {
-    if (selectedDestinations.length > 1) {
-      let distance = 0;
-      const breakdown: Array<{from: string; to: string; distance: number}> = [];
-      
-      // Different calculation based on travel style
-      if (travelStyle === 'mobile') {
-        // Linear travel between destinations
-        for (let i = 0; i < selectedDestinations.length - 1; i++) {
-          const from = selectedDestinations[i];
-          const to = selectedDestinations[i + 1];
-          const segmentDistance = calculateDistanceBetweenDestinations(from, to);
-          distance += segmentDistance;
-          breakdown.push({
-            from: from.name,
-            to: to.name,
-            distance: segmentDistance
-          });
-        }
-      } else if (travelStyle === 'base-hotel' && selectedDestinations.length > 1) {
-        // Travel from base hotel to each destination and back
-        const baseDestination = selectedDestinations[0];
+  // Calculate total distance between destinations - memoized for performance
+  const calculatedDistance = useMemo(() => {
+    if (selectedDestinations.length <= 1) return 0;
+    
+    let distance = 0;
+    const breakdown: Array<{from: string; to: string; distance: number}> = [];
+    
+    // Different calculation based on travel style
+    if (travelStyle === 'mobile') {
+      // Linear travel between destinations
+      for (let i = 0; i < selectedDestinations.length - 1; i++) {
+        const from = selectedDestinations[i];
+        const to = selectedDestinations[i + 1];
+        if (!from.coordinates || !to.coordinates) continue;
         
-        for (let i = 1; i < selectedDestinations.length; i++) {
-          const destination = selectedDestinations[i];
-          const toDistance = calculateDistanceBetweenDestinations(baseDestination, destination);
-          const fromDistance = calculateDistanceBetweenDestinations(destination, baseDestination);
-          
-          // Round trip distance
-          distance += (toDistance + fromDistance);
-          
-          breakdown.push({
-            from: baseDestination.name,
-            to: destination.name,
-            distance: toDistance
-          });
-          breakdown.push({
-            from: destination.name,
-            to: baseDestination.name,
-            distance: fromDistance
-          });
-        }
+        const segmentDistance = calculateDistanceBetweenDestinations(from, to);
+        distance += segmentDistance;
+        breakdown.push({
+          from: from.name,
+          to: to.name,
+          distance: segmentDistance
+        });
       }
+    } else if (travelStyle === 'base-hotel' && selectedDestinations.length > 1) {
+      // Travel from base hotel to each destination and back
+      const baseDestination = selectedDestinations[0];
       
-      setTotalDistance(distance);
-      
-      // Calculate travel time based on transport mode
-      const speedMap = {
-        'bus': 45,    // km/h
-        'train': 60,  // km/h
-        'flight': 500, // km/h
-        'car': 50     // km/h
-      };
-      
-      const speed = speedMap[transportType] || 50;
-      const travelTime = distance / speed;
-      
-      setTransportDetails({
-        distanceBreakdown: breakdown,
-        totalTravelTime: travelTime
-      });
-    } else {
-      setTotalDistance(0);
-      setTransportDetails({ distanceBreakdown: [], totalTravelTime: 0 });
+      for (let i = 1; i < selectedDestinations.length; i++) {
+        const destination = selectedDestinations[i];
+        if (!baseDestination.coordinates || !destination.coordinates) continue;
+        
+        const toDistance = calculateDistanceBetweenDestinations(baseDestination, destination);
+        const fromDistance = calculateDistanceBetweenDestinations(destination, baseDestination);
+        
+        distance += (toDistance + fromDistance);
+        
+        breakdown.push({
+          from: baseDestination.name,
+          to: destination.name,
+          distance: toDistance
+        });
+        breakdown.push({
+          from: destination.name,
+          to: baseDestination.name,
+          distance: fromDistance
+        });
+      }
     }
+    
+    // Calculate travel time based on transport mode
+    const speedMap = {
+      'bus': 45,    // km/h
+      'train': 60,  // km/h
+      'flight': 500, // km/h
+      'car': 50     // km/h
+    };
+    
+    const speed = speedMap[transportType] || 50;
+    const travelTime = distance / speed;
+    
+    return {
+      totalDistance: distance,
+      breakdown,
+      travelTime,
+      speed
+    };
   }, [selectedDestinations, calculateDistanceBetweenDestinations, transportType, travelStyle]);
 
-  // Get available guides
+  // Set total distance and transport details when calculated
   useEffect(() => {
-    if (destinationIds.length > 0) {
-      const guides = destinationIds.flatMap(destId => 
+    setTotalDistance(calculatedDistance.totalDistance);
+    setTransportDetails({
+      distanceBreakdown: calculatedDistance.breakdown,
+      totalTravelTime: calculatedDistance.travelTime
+    });
+  }, [calculatedDistance]);
+
+  // Get available guides - memoized for performance
+  const guides = useMemo(() => {
+    if (destinationIds.length === 0) return [];
+    
+    try {
+      return destinationIds.flatMap(destId => 
         getGuidesByDestination(destId)
       );
-      setAvailableGuides(guides);
+    } catch (error) {
+      console.error("Error fetching guides:", error);
+      return [];
     }
   }, [destinationIds, getGuidesByDestination]);
 
-  // Calculate trip costs with improved logic
+  // Set available guides when fetched
   useEffect(() => {
-    if (selectedDestinations.length > 0) {
-      // Get hotels based on travel style and number of destinations
-      let hotelsList = [];
-      
-      if (selectedDestinations.length > 1 && travelStyle === 'mobile') {
-        // Multiple destinations with changing hotels
-        hotelsList = getOptimalHotels(destinationIds);
-      } else if (selectedDestinations.length > 1 && travelStyle === 'base-hotel') {
-        // Multiple destinations with base hotel - find most central
-        const centralHotel = getNearbyHotels(destinationIds[0], 1);
-        hotelsList = centralHotel;
-      } else if (selectedDestinations.length === 1) {
-        // Single destination - just get hotels for that destination
-        hotelsList = getHotelsByDestination(destinationIds[0])
-          .filter(hotel => hotel.type === hotelType)
-          .slice(0, 1);
-      }
-      
-      // Calculate transport cost based on distance and type
-      let transportCost = 0;
-      
-      // Find the selected transport details - FIX: Safely handle undefined values
-      const availableTransports = transports.filter(t => t.type === transportType);
-      let selectedTransport;
-      
-      if (availableTransports.length > 0) {
-        selectedTransport = availableTransports.reduce((max, transport) => 
-          transport.pricePerPerson > max.pricePerPerson ? transport : max, 
-          availableTransports[0]
-        );
-      } else {
-        // Fallback for missing transport types
-        selectedTransport = {
-          pricePerPerson: 1000, // Default value
-          type: transportType
-        };
-      }
-      
-      if (totalDistance > 0) {
-        // Base cost per km based on transport type
-        const baseCostPerKm = {
-          'bus': 2.5,
-          'train': 3.5,
-          'flight': 5,
-          'car': 12
-        }[transportType] || 5;
+    setAvailableGuides(guides);
+  }, [guides]);
+
+  // Calculate trip costs with improved logic and error handling
+  useEffect(() => {
+    if (selectedDestinations.length === 0) return;
+    
+    const calculateCosts = async () => {
+      try {
+        setIsCalculating(true);
         
-        // Calculate cost based on distance
-        transportCost = totalDistance * baseCostPerKm;
+        // Get hotels based on travel style and number of destinations
+        let hotelsList = [];
         
-        if (transportType === 'flight') {
-          // For flights: base fare + distance-based fare
-          transportCost = 2500 + (transportCost * 0.8);
+        if (selectedDestinations.length > 1 && travelStyle === 'mobile') {
+          // Multiple destinations with changing hotels
+          hotelsList = getOptimalHotels(destinationIds) || [];
+        } else if (selectedDestinations.length > 1 && travelStyle === 'base-hotel') {
+          // Multiple destinations with base hotel - find most central
+          const centralHotel = getNearbyHotels(destinationIds[0], 1) || [];
+          hotelsList = centralHotel;
+        } else if (selectedDestinations.length === 1) {
+          // Single destination - just get hotels for that destination
+          const destHotels = getHotelsByDestination(destinationIds[0]) || [];
+          hotelsList = destHotels
+            .filter(hotel => hotel.type === hotelType)
+            .slice(0, 1);
         }
         
-        // Premium discount (10%)
-        if (isPremium) {
-          transportCost *= 0.9;
+        // Calculate transport cost based on distance and type
+        let transportCost = 0;
+        
+        // Find the selected transport details - safely handle undefined values
+        const availableTransports = transports.filter(t => t.type === transportType);
+        let selectedTransport = null;
+        
+        if (availableTransports.length > 0) {
+          selectedTransport = availableTransports.reduce((max, transport) => 
+            transport.pricePerPerson > max.pricePerPerson ? transport : max, 
+            availableTransports[0]
+          );
         }
         
-        // Multiply by number of people
-        transportCost *= numberOfPeople;
-      }
-      
-      // Calculate hotels cost based on type and number of days
-      let hotelsCost = 0;
-      if (hotelsList && hotelsList.length > 0) {
-        const hotelCostPerDay = hotelsList.reduce((sum, h) => sum + h.pricePerPerson, 0) / hotelsList.length;
-        hotelsCost = hotelCostPerDay * numberOfDays * numberOfPeople;
-      }
-      
-      // Calculate destinations cost (entry tickets)
-      let destinationsCost = 0;
-      for (const dest of selectedDestinations) {
-        if (typeof dest.price === 'number') {
-          destinationsCost += dest.price;
-        } else if (dest.price && typeof dest.price.adult === 'number') {
-          destinationsCost += dest.price.adult;
+        if (totalDistance > 0) {
+          // Base cost per km based on transport type
+          const baseCostPerKm = {
+            'bus': 2.5,
+            'train': 3.5,
+            'flight': 5,
+            'car': 12
+          }[transportType] || 5;
+          
+          // Calculate cost based on distance
+          transportCost = totalDistance * baseCostPerKm;
+          
+          if (transportType === 'flight') {
+            // For flights: base fare + distance-based fare
+            transportCost = 2500 + (transportCost * 0.8);
+          }
+          
+          // Premium discount (10%)
+          if (isPremium) {
+            transportCost *= 0.9;
+          }
+          
+          // Multiply by number of people
+          transportCost *= numberOfPeople;
         }
+        
+        // Calculate hotels cost based on type and number of days
+        let hotelsCost = 0;
+        if (hotelsList && hotelsList.length > 0) {
+          // Safely calculate hotel costs
+          const validHotels = hotelsList.filter(h => h && typeof h.pricePerPerson === 'number');
+          
+          if (validHotels.length > 0) {
+            const hotelCostPerDay = validHotels.reduce((sum, h) => sum + h.pricePerPerson, 0) / validHotels.length;
+            hotelsCost = hotelCostPerDay * numberOfDays * numberOfPeople;
+          } else {
+            // Fallback costs if no valid hotels found
+            const fallbackCosts = {
+              'budget': 1500,
+              'standard': 3000,
+              'luxury': 8000
+            };
+            hotelsCost = (fallbackCosts[hotelType] || 3000) * numberOfDays * numberOfPeople;
+          }
+        }
+        
+        // Calculate destinations cost (entry tickets)
+        let destinationsCost = 0;
+        for (const dest of selectedDestinations) {
+          if (typeof dest.price === 'number') {
+            destinationsCost += dest.price;
+          } else if (dest.price && typeof dest.price.adult === 'number') {
+            destinationsCost += dest.price.adult;
+          } else {
+            // Fallback price if not defined
+            destinationsCost += 500;
+          }
+        }
+        destinationsCost *= numberOfPeople;
+        
+        // Calculate guides cost
+        let guidesCost = 0;
+        if (selectedGuideIds.length > 0 && availableGuides.length > 0) {
+          const selectedGuides = availableGuides.filter(g => selectedGuideIds.includes(g.id));
+          guidesCost = selectedGuides.reduce((sum, g) => sum + (g.pricePerDay || 2000), 0) * numberOfDays;
+        }
+        
+        // Set total trip cost
+        setTripCost({
+          transportCost,
+          hotelsCost,
+          destinationsCost,
+          guidesCost,
+          totalCost: transportCost + hotelsCost + destinationsCost + guidesCost,
+          totalDistance,
+          travelTimeHours: transportDetails.totalTravelTime,
+          transportDetails: transportDetails.distanceBreakdown
+        });
+      } catch (error) {
+        console.error("Error calculating trip cost:", error);
+        toast({
+          title: "Calculation Error",
+          description: "There was an error calculating the trip cost. Please try again.",
+          variant: "destructive"
+        });
+        
+        // Set fallback costs so UI doesn't break
+        setTripCost({
+          transportCost: 5000 * numberOfPeople,
+          hotelsCost: 3000 * numberOfDays * numberOfPeople,
+          destinationsCost: 500 * selectedDestinations.length * numberOfPeople,
+          guidesCost: selectedGuideIds.length > 0 ? 2000 * numberOfDays : 0,
+          totalCost: (5000 + (3000 * numberOfDays) + (500 * selectedDestinations.length)) * numberOfPeople + 
+                    (selectedGuideIds.length > 0 ? 2000 * numberOfDays : 0),
+          totalDistance,
+          travelTimeHours: totalDistance / 50,
+          transportDetails: []
+        });
+      } finally {
+        setIsCalculating(false);
       }
-      destinationsCost *= numberOfPeople;
-      
-      // Calculate guides cost
-      let guidesCost = 0;
-      if (selectedGuideIds.length > 0) {
-        const selectedGuides = availableGuides.filter(g => selectedGuideIds.includes(g.id));
-        guidesCost = selectedGuides.reduce((sum, g) => sum + g.pricePerDay, 0) * numberOfDays;
-      }
-      
-      // Set total trip cost
-      setTripCost({
-        transportCost,
-        hotelsCost,
-        destinationsCost,
-        guidesCost,
-        totalCost: transportCost + hotelsCost + destinationsCost + guidesCost,
-        totalDistance,
-        travelTimeHours: transportDetails.totalTravelTime,
-        transportDetails: transportDetails.distanceBreakdown
-      });
-    }
+    };
+
+    // Add a slight delay to prevent UI freeze and ensure other state is set
+    const timer = setTimeout(() => {
+      calculateCosts();
+    }, 500);
+    
+    return () => clearTimeout(timer);
   }, [
     selectedDestinations,
     destinationIds,
@@ -244,12 +311,24 @@ const TripCostEstimate: React.FC<TripCostEstimateProps> = ({
     transportDetails
   ]);
 
+  if (isCalculating) {
+    return (
+      <div>
+        <h3 className="font-semibold mb-3">Cost Estimate</h3>
+        <div className="bg-white border rounded-lg p-4 flex flex-col items-center justify-center py-6">
+          <Loader2 className="h-6 w-6 animate-spin mb-2 text-primary" />
+          <p className="text-sm text-gray-600">Calculating trip cost...</p>
+        </div>
+      </div>
+    );
+  }
+
   if (!tripCost) {
     return (
       <div>
         <h3 className="font-semibold mb-3">Cost Estimate</h3>
         <div className="bg-white border rounded-lg p-4 text-center">
-          <p className="text-sm text-gray-500">Loading cost estimate...</p>
+          <p className="text-sm text-gray-500">Select all options to see cost estimate</p>
         </div>
       </div>
     );

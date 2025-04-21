@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
@@ -83,6 +82,7 @@ const TripPlanningForm: React.FC<TripPlanningFormProps> = ({
         selectedDestinations: selectedDestinations.map(dest => dest.id),
         destinationNames: selectedDestinations.map(dest => dest.name),
         transportType,
+        hotelType,
         travelStyle,
         isPremium: currentUser.isPremium,
         status: 'pending' as const,
@@ -98,7 +98,7 @@ const TripPlanningForm: React.FC<TripPlanningFormProps> = ({
       });
       
       // Redirect to bookings history page to view the trip details
-      navigate(`/bookings-history`);
+      navigate('/bookings-history');
     } catch (error) {
       console.error("Error creating trip plan:", error);
       setErrorMsg("Failed to create trip plan. Please try again.");
@@ -109,6 +109,16 @@ const TripPlanningForm: React.FC<TripPlanningFormProps> = ({
       });
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleCancelPlan = () => {
+    // If there's a back function provided, use it
+    if (onBackToSelection) {
+      onBackToSelection();
+    } else {
+      // Otherwise navigate to destinations page
+      navigate('/destinations');
     }
   };
 
@@ -167,6 +177,7 @@ const TripPlanningForm: React.FC<TripPlanningFormProps> = ({
           setSelectedGuideIds={setSelectedGuideIds}
           submitting={submitting}
           onSubmitPlan={handleSubmitPlan}
+          onCancelPlan={handleCancelPlan}
           isPremium={currentUser?.isPremium}
         />
       </CardContent>
