@@ -145,13 +145,22 @@ const TripCostEstimate: React.FC<TripCostEstimateProps> = ({
       // Calculate transport cost based on distance and type
       let transportCost = 0;
       
-      // Find the selected transport details
-      const selectedTransport = transports
-        .filter(t => t.type === transportType)
-        .reduce((max, transport) => 
+      // Find the selected transport details - FIX: Safely handle undefined values
+      const availableTransports = transports.filter(t => t.type === transportType);
+      let selectedTransport;
+      
+      if (availableTransports.length > 0) {
+        selectedTransport = availableTransports.reduce((max, transport) => 
           transport.pricePerPerson > max.pricePerPerson ? transport : max, 
-          transports.find(t => t.type === transportType) || { pricePerPerson: 0 }
+          availableTransports[0]
         );
+      } else {
+        // Fallback for missing transport types
+        selectedTransport = {
+          pricePerPerson: 1000, // Default value
+          type: transportType
+        };
+      }
       
       if (totalDistance > 0) {
         // Base cost per km based on transport type
@@ -181,7 +190,7 @@ const TripCostEstimate: React.FC<TripCostEstimateProps> = ({
       
       // Calculate hotels cost based on type and number of days
       let hotelsCost = 0;
-      if (hotelsList.length > 0) {
+      if (hotelsList && hotelsList.length > 0) {
         const hotelCostPerDay = hotelsList.reduce((sum, h) => sum + h.pricePerPerson, 0) / hotelsList.length;
         hotelsCost = hotelCostPerDay * numberOfDays * numberOfPeople;
       }

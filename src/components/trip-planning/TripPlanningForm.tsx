@@ -3,20 +3,12 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useTripPlanning } from '../../context/trip-planning/TripPlanningContext';
-import { useDestinations } from '../../context/DestinationContext';
 import { Destination } from '../../types';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/hooks/use-toast';
 import { ChevronLeft } from 'lucide-react';
-import DestinationSelector from './DestinationSelector';
-import TripDetailsInput from './TripDetailsInput';
-import TransportSelector from './TransportSelector';
-import TravelStyleSelector from './TravelStyleSelector';
-import HotelTypeSelector from './HotelTypeSelector';
-import GuideSelector from './GuideSelector';
-import TripFeasibilityCheck from './TripFeasibilityCheck';
-import TripCostEstimate from './TripCostEstimate';
+import TripPlanningFormContent from './TripPlanningFormContent';
 
 interface TripPlanningFormProps {
   selectedDestinations: Destination[];
@@ -30,7 +22,6 @@ const TripPlanningForm: React.FC<TripPlanningFormProps> = ({
   const navigate = useNavigate();
   const { currentUser } = useAuth();
   const { saveTripPlan } = useTripPlanning();
-  const { destinations } = useDestinations();
   const [selectedDestinations, setSelectedDestinations] = useState<Destination[]>(initialDestinations);
   
   // Form state
@@ -44,7 +35,9 @@ const TripPlanningForm: React.FC<TripPlanningFormProps> = ({
   const [submitting, setSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  const destinationIds = selectedDestinations.map(destination => destination.id);
+  const handleRemoveDestination = (id: string) => {
+    setSelectedDestinations(prev => prev.filter(dest => dest.id !== id));
+  };
 
   // Handle form submission
   const handleSubmitPlan = async () => {
@@ -87,7 +80,7 @@ const TripPlanningForm: React.FC<TripPlanningFormProps> = ({
         userId: currentUser.id,
         startDate: startDate.toISOString(),
         numberOfDays,
-        selectedDestinations: destinationIds,
+        selectedDestinations: selectedDestinations.map(dest => dest.id),
         destinationNames: selectedDestinations.map(dest => dest.name),
         transportType,
         travelStyle,
@@ -104,10 +97,8 @@ const TripPlanningForm: React.FC<TripPlanningFormProps> = ({
         description: "Your trip has been successfully planned.",
       });
       
-      // Redirect to bookings page to view the trip details
-      setTimeout(() => {
-        navigate(`/bookings-history`);
-      }, 1000);
+      // Redirect to bookings history page to view the trip details
+      navigate(`/bookings-history`);
     } catch (error) {
       console.error("Error creating trip plan:", error);
       setErrorMsg("Failed to create trip plan. Please try again.");
@@ -157,81 +148,27 @@ const TripPlanningForm: React.FC<TripPlanningFormProps> = ({
           </div>
         )}
         
-        <div className="grid md:grid-cols-2 gap-8">
-          {/* Left Column - Trip Details */}
-          <div className="space-y-6">
-            <DestinationSelector 
-              selectedDestinations={selectedDestinations} 
-            />
-            
-            <TripDetailsInput 
-              startDate={startDate}
-              setStartDate={setStartDate}
-              numberOfDays={numberOfDays}
-              setNumberOfDays={setNumberOfDays}
-              numberOfPeople={numberOfPeople}
-              setNumberOfPeople={setNumberOfPeople}
-              travelStyle={travelStyle}
-              setTravelStyle={setTravelStyle}
-              selectedDestinations={selectedDestinations}
-            />
-            
-            <HotelTypeSelector 
-              hotelType={hotelType}
-              setHotelType={setHotelType}
-            />
-
-            <GuideSelector 
-              destinationIds={destinationIds}
-              selectedGuideIds={selectedGuideIds}
-              setSelectedGuideIds={setSelectedGuideIds}
-            />
-            
-            <TransportSelector 
-              transportType={transportType}
-              setTransportType={setTransportType}
-              destinationIds={destinationIds}
-              numberOfDays={numberOfDays}
-              isPremium={currentUser?.isPremium}
-            />
-          </div>
-          
-          {/* Right Column - Trip Summary */}
-          <div className="space-y-6">
-            <TripFeasibilityCheck 
-              destinationIds={destinationIds}
-              transportType={transportType}
-              numberOfDays={numberOfDays}
-            />
-            
-            <TripCostEstimate 
-              destinationIds={destinationIds}
-              selectedDestinations={selectedDestinations}
-              transportType={transportType}
-              hotelType={hotelType}
-              travelStyle={travelStyle}
-              numberOfDays={numberOfDays}
-              numberOfPeople={numberOfPeople}
-              selectedGuideIds={selectedGuideIds}
-              isPremium={currentUser?.isPremium}
-            />
-            
-            <div className="pt-4">
-              <Button 
-                onClick={handleSubmitPlan} 
-                className="w-full"
-                disabled={submitting || !startDate || selectedDestinations.length === 0}
-              >
-                {submitting ? 'Creating Plan...' : 'Create Trip Plan'}
-              </Button>
-              {!currentUser && (
-                <p className="text-sm text-gray-500 text-center mt-2">
-                  Login required to save trip plans
-                </p>
-              )}
-            </div>
-          </div>
-        </div>
+        <TripPlanningFormContent 
+          selectedDestinations={selectedDestinations}
+          onRemoveDestination={handleRemoveDestination}
+          startDate={startDate}
+          setStartDate={setStartDate}
+          numberOfDays={numberOfDays}
+          setNumberOfDays={setNumberOfDays}
+          numberOfPeople={numberOfPeople}
+          setNumberOfPeople={setNumberOfPeople}
+          transportType={transportType}
+          setTransportType={setTransportType}
+          hotelType={hotelType}
+          setHotelType={setHotelType}
+          travelStyle={travelStyle}
+          setTravelStyle={setTravelStyle}
+          selectedGuideIds={selectedGuideIds}
+          setSelectedGuideIds={setSelectedGuideIds}
+          submitting={submitting}
+          onSubmitPlan={handleSubmitPlan}
+          isPremium={currentUser?.isPremium}
+        />
       </CardContent>
     </Card>
   );

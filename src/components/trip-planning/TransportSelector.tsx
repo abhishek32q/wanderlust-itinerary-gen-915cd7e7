@@ -31,18 +31,23 @@ const TransportSelector: React.FC<TransportSelectorProps> = ({
   // Get transport suggestion based on trip parameters
   useEffect(() => {
     if (destinationIds.length > 0) {
-      const suggested = getSuggestedTransport(
-        destinationIds,
-        numberOfDays,
-        isPremium
-      );
-      setSuggestedTransport(suggested);
+      try {
+        const suggested = getSuggestedTransport(
+          destinationIds,
+          numberOfDays,
+          isPremium
+        );
+        setSuggestedTransport(suggested);
+      } catch (error) {
+        console.error("Error getting transport suggestion:", error);
+      }
     }
   }, [destinationIds, numberOfDays, isPremium, getSuggestedTransport]);
   
   // Filter available transports based on selected transport type
   useEffect(() => {
-    setAvailableTransports(transports.filter(t => t.type === transportType));
+    const filtered = transports.filter(t => t.type === transportType);
+    setAvailableTransports(filtered.length > 0 ? filtered : []);
     setSelectedTransportType(null); // Reset selected specific transport when type changes
   }, [transportType, transports]);
 
@@ -107,28 +112,30 @@ const TransportSelector: React.FC<TransportSelectorProps> = ({
       </div>
       
       {/* Transport Type Selection */}
-      <div>
-        <Label>Select Specific {transportType.charAt(0).toUpperCase() + transportType.slice(1)} Type</Label>
-        <Select value={selectedTransportType || ""} onValueChange={setSelectedTransportType}>
-          <SelectTrigger className="mt-2">
-            <SelectValue placeholder={`Choose ${transportType} type...`} />
-          </SelectTrigger>
-          <SelectContent>
-            {availableTransports.map(transport => (
-              <SelectItem key={transport.id} value={transport.id}>
-                {transport.name} - ₹{transport.pricePerPerson.toLocaleString()}/person
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+      {availableTransports.length > 0 && (
+        <div>
+          <Label>Select Specific {transportType.charAt(0).toUpperCase() + transportType.slice(1)} Type</Label>
+          <Select value={selectedTransportType || ""} onValueChange={setSelectedTransportType}>
+            <SelectTrigger className="mt-2">
+              <SelectValue placeholder={`Choose ${transportType} type...`} />
+            </SelectTrigger>
+            <SelectContent>
+              {availableTransports.map(transport => (
+                <SelectItem key={transport.id} value={transport.id}>
+                  {transport.name} - ₹{transport.pricePerPerson.toLocaleString()}/person
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
       
       {/* Display Amenities */}
       {selectedTransportType && (
         <div className="bg-gray-50 p-3 rounded-lg mt-2">
           <Label className="text-sm">Amenities</Label>
           <div className="flex flex-wrap gap-1 mt-2">
-            {transports
+            {availableTransports
               .find(t => t.id === selectedTransportType)
               ?.amenities.map((amenity, i) => (
                 <Badge key={i} variant="outline" className="bg-white">{amenity}</Badge>
