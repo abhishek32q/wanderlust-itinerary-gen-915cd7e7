@@ -28,7 +28,7 @@ const Index: React.FC = () => {
         destination.city.toLowerCase().includes(searchQuery.toLowerCase()) ||
         destination.state.toLowerCase().includes(searchQuery.toLowerCase());
       
-      const matchesState = !selectedState || destination.state === selectedState;
+      const matchesState = selectedState === '' || selectedState === 'all' || destination.state === selectedState;
       
       return matchesSearch && matchesState;
     });

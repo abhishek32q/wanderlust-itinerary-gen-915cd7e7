@@ -121,8 +121,8 @@ const TransportSelector: React.FC<TransportSelectorProps> = ({
             </SelectTrigger>
             <SelectContent>
               {availableTransports.map(transport => (
-                <SelectItem key={transport.id} value={transport.id}>
-                  {transport.name} - ₹{transport.pricePerPerson.toLocaleString()}/person
+                <SelectItem key={transport.id} value={transport.id || "default-transport"}>
+                  {transport.name} - ₹{transport.pricePerPerson?.toLocaleString() || 0}/person
                 </SelectItem>
               ))}
             </SelectContent>
@@ -137,7 +137,7 @@ const TransportSelector: React.FC<TransportSelectorProps> = ({
           <div className="flex flex-wrap gap-1 mt-2">
             {availableTransports
               .find(t => t.id === selectedTransportType)
-              ?.amenities.map((amenity, i) => (
+              ?.amenities?.map((amenity, i) => (
                 <Badge key={i} variant="outline" className="bg-white">{amenity}</Badge>
               ))}
           </div>
@@ -154,11 +154,11 @@ const TransportSelector: React.FC<TransportSelectorProps> = ({
           
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              {getTransportIcon(suggestedTransport.recommendedType)}
-              <span className="font-medium capitalize">{suggestedTransport.recommendedType}</span>
+              {getTransportIcon(suggestedTransport.recommendedType || 'car')}
+              <span className="font-medium capitalize">{suggestedTransport.recommendedType || 'car'}</span>
             </div>
             
-            <p className="text-sm text-gray-600">{suggestedTransport.reasoning}</p>
+            <p className="text-sm text-gray-600">{suggestedTransport.reasoning || 'Best option for your trip'}</p>
           </div>
           
           {!suggestedTransport.isRealistic && (
